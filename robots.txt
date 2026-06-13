@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Block API routes
+Disallow: /api/
+Disallow: /admin/
+
+# Sitemap
+Sitemap: https://ancuugalleriahue.vn/sitemap.xml
+
+# Crawl-delay (optional)
+Crawl-delay: 1
