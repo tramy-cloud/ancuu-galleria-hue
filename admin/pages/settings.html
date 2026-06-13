@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cài Đặt Website – An Cựu Galleria Admin</title>
+  <link rel="stylesheet" href="../admin.css" />
+  <style>
+    /* ─── SETTINGS PAGE EXTRAS ─────────────────────────────── */
+    .settings-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    .settings-nav {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      position: sticky;
+      top: calc(var(--header-h) + 28px);
+    }
+    .settings-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 18px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      border-bottom: 1px solid var(--border);
+      transition: all 0.18s;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+    .settings-nav-item:last-child { border-bottom: none; }
+    .settings-nav-item:hover { background: var(--bg-card); color: var(--text); }
+    .settings-nav-item.active { background: var(--gold-glow); color: var(--gold); border-left-color: var(--gold); font-weight: 600; }
+    .settings-tab-content { display: none; }
+    .settings-tab-content.active { display: block; animation: fadeIn 0.2s ease; }
+    .settings-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .settings-section-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .settings-section-icon {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      background: var(--gold-glow);
+      border: 1px solid var(--border-gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .settings-section-title { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+    .settings-section-desc { font-size: 0.78rem; color: var(--text-3); margin-top:2px; }
+    .settings-section-body { padding: 24px; }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .form-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .save-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding-top: 6px;
+    }
+    /* Image Upload Zone */
+    .img-upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+      background: var(--bg-card);
+    }
+    .img-upload-zone:hover { border-color: var(--gold); background: var(--gold-glow); }
+    .img-upload-zone input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .img-preview {
+      margin-top: 12px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+    .img-preview img { width:100%; max-height: 180px; object-fit:cover; display:block; }
+    .img-preview-remove {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: rgba(239,68,68,0.9);
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+    /* Password strength */
+    .pwd-strength-bar { height:4px; border-radius:99px; background:var(--bg-card); margin-top:6px; overflow:hidden; }
+    .pwd-strength-fill { height:100%; border-radius:99px; transition: width 0.3s, background 0.3s; width:0%; }
+    .pwd-strength-text { font-size:0.72rem; margin-top:4px; }
+    /* Login history */
+    .login-history-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .login-history-item:last-child { border-bottom: none; }
+    .login-history-icon { width:36px; height:36px; border-radius:50%; background:var(--bg-card); border:1px solid var(--border); display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0; }
+    .login-history-info strong { display:block; font-size:0.875rem; color:var(--text); }
+    .login-history-info span { font-size:0.75rem; color:var(--text-3); }
+    /* Session badge */
+    .session-card { background:var(--bg-card); border:1px solid var(--border-gold); border-radius:var(--radius); padding:16px 20px; display:flex;align-items:center;gap:14px; }
+    .session-dot { width:10px;height:10px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success);animation:pulse 2s infinite;flex-shrink:0; }
+    /* Counter stat inputs */
+    .counter-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+    .counter-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; text-align:center; }
+    .counter-card label { display:block; font-size:0.72rem; font-weight:700; color:var(--text-3); text-transform:uppercase; margin-bottom:10px; }
+    .counter-card input { width:100%; text-align:center; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px; color:var(--gold); font-size:1.3rem; font-weight:800; outline:none; }
+    .counter-card input:focus { border-color:var(--gold); }
+    /* Code textarea */
+    .code-textarea { font-family:monospace; font-size:0.82rem; line-height:1.6; }
+    /* Social icon prefix */
+    .input-with-prefix { display:flex; align-items:center; }
+    .input-prefix { padding:11px 12px; background:var(--bg-elevated); border:1px solid var(--border); border-right:none; border-radius:var(--radius-sm) 0 0 var(--radius-sm); color:var(--text-3); font-size:0.85rem; white-space:nowrap; }
+    .input-with-prefix .form-control { border-radius:0 var(--radius-sm) var(--radius-sm) 0; }
+    @media(max-width:900px) { .settings-layout { grid-template-columns:1fr; } .settings-nav { position:static; display:flex; overflow-x:auto; } .settings-nav-item { border-left:none; border-bottom:3px solid transparent; white-space:nowrap; } .settings-nav-item.active { border-bottom-color:var(--gold); border-left-color:transparent; } }
+    @media(max-width:700px) { .form-grid-2,.form-grid-3,.form-grid-4,.counter-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:480px) { .form-grid-2,.form-grid-3,.form-grid-4,.counter-grid { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="admin-sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">A</div>
+        <div class="sidebar-logo-text">
+          <strong>An Cựu Galleria</strong>
+          <span>Admin Panel</span>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Tổng Quan</div>
+      <a href="../index.html" class="admin-nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+      <div class="nav-section-title">Quản Lý</div>
+      <a href="properties.html" class="admin-nav-link"><span class="nav-icon">🏘️</span> Bất Động Sản</a>
+      <a href="projects.html" class="admin-nav-link"><span class="nav-icon">🏗️</span> Dự Án</a>
+      <a href="leads.html" class="admin-nav-link"><span class="nav-icon">👥</span> Leads &amp; Liên Hệ</a>
+      <a href="blog.html" class="admin-nav-link"><span class="nav-icon">📝</span> Blog &amp; Tin Tức</a>
+      <a href="gallery.html" class="admin-nav-link"><span class="nav-icon">🖼️</span> Thư Viện Ảnh</a>
+      <div class="nav-section-title">Hệ Thống</div>
+      <a href="settings.html" class="admin-nav-link active"><span class="nav-icon">⚙️</span> Cài Đặt</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="user-avatar">A</div>
+        <div class="sidebar-user-info">
+          <strong id="user-email-display">Admin</strong>
+          <span>Quản trị viên</span>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-full btn-sm" onclick="Auth.logout()">🚪 Đăng Xuất</button>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div>
+          <div class="topbar-title">Cài Đặt Website</div>
+          <div class="topbar-breadcrumb">Admin / Cài Đặt</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-gold btn-sm" onclick="saveCurrentTab()">💾 Lưu Thay Đổi</button>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="settings-layout">
+
+        <!-- LEFT NAV -->
+        <nav class="settings-nav">
+          <button class="settings-nav-item active" onclick="switchTab('basic')" id="nav-basic">
+            <span>🏢</span> Thông Tin Cơ Bản
+          </button>
+          <button class="settings-nav-item" onclick="switchTab('agent')" id="nav-agent">
+            <span>👤</span> Thông Tin Môi Giới
+          </button>
+          <button class="settings-nav-item" onclick="switchTab('homepage')" id="nav-homepage">
+            <span>🏠</span> Trang Chủ
+          </button>
+          <button class="settings-nav-item" onclick="switchTab('seo')" id="nav-seo">
+            <span>🔍</span> SEO &amp; Analytics
+          </button>
+          <button class="settings-nav-item" onclick="switchTab('security')" id="nav-security">
+            <span>🔒</span> Bảo Mật
+          </button>
+        </nav>
+
+        <!-- RIGHT CONTENT -->
+        <div class="settings-content">
+
+          <!-- ══════════ TAB 1: THÔNG TIN CƠ BẢN ══════════ -->
+          <div class="settings-tab-content active" id="tab-basic">
+
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div class="settings-section-icon">🏢</div>
+                <div>
+                  <div class="settings-section-title">Thông Tin Website</div>
+                  <div class="settings-section-desc">Tên, slogan, thông tin liên hệ chính</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Tên Website</label>
+                    <input type="text" class="form-control" id="s-name" placeholder="An Cựu Galleria Huế" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Tagline / Slogan</label>
+                    <input type="text" class="form-control" id="s-tagline" placeholder="Bất Động Sản Cao Cấp Tại Huế" />
+                  </div>
+                </div>
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Số Hotline</label>
+                    <div class="input-wrapper">
+                      <span class="input-icon">📞</span>
+                      <input type="text" class="form-control has-icon" id="s-hotline" placeholder="0907272001" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Email Liên Hệ</label>
+                    <div class="input-wrapper">
+                      <span class="input-icon">📧</span>
+                      <input type="email" class="form-control has-icon" id="s-email" placeholder="lienhe@ancuugalleriahue.vn" />
+                    </div>
+                  </div>
+                </div>
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Địa Chỉ Văn Phòng</label>
+                    <input type="text" class="form-control" id="s-address" placeholder="An Cựu, TP. Huế, Thừa Thiên Huế" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Giờ Làm Việc</label>
+                    <input type="text" class="form-control" id="s-hours" placeholder="08:00 – 20:00, 7 ngày/tuần" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div class="settings-section-icon">🔗</div>
+                <div>
+                  <div class="settings-section-title">Mạng Xã Hội</div>
+                  <div class="settings-section-desc">Link đến các kênh mạng xã hội</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Facebook URL</label>
+                    <div class="input-with-prefix">
+                      <span class="input-prefix">📘</span>
+                      <input type="url" class="form-control" id="s-facebook" placeholder="https://facebook.com/..." />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Zalo URL</label>
+                    <div class="input-with-prefix">
+                      <span class="input-prefix">💬</span>
+                      <input type="url" class="form-control" id="s-zalo" placeholder="https://zalo.me/..." />
+                    </div>
+                  </div>
+                </div>
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label">TikTok URL</label>
+                    <div class="input-with-prefix">
+                      <span class="input-prefix">🎵</span>
+                      <input type="url" class="form-control" id="s-tiktok" placeholder="https://tiktok.com/@..." />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">YouTube URL</label>
+                    <div class="input-with-prefix">
+                      <span class="input-prefix">▶️</span>
+                      <input type="url" class="form-control" id="s-youtube" placeholder="https://youtube.com/@..." />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="save-bar">
+              <button class="btn btn-ghost" onclick="loadAllSettings()">↩ Khôi Phục</button>
+              <button class="btn btn-gold" onclick="saveBasic()">💾 Lưu Thông Tin Cơ Bản</button>
+            </div>
+          </div>
+
+          <!-- ══════════ TAB 2: THÔNG TIN MÔI GIỚI ══════════ -->
+          <div class="settings-tab-content" id="tab-agent">
+
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div class="settings-section-icon">👤</div>
+                <div>
+                  <div class="settings-section-title">Hồ Sơ Môi Giới</div>
+                  <div class="settings-section-desc">Thông tin cá nhân và chuyên môn của môi giới</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="form-grid-2">
+                  <div>
+                    <div class="form-grid-2" style="margin-bottom:0;">
+                      <div class="form-group">
+                        <label class="form-label">Tên Môi Giới</label>
+                        <input type="text" class="form-control" id="s-agent-name" placeholder="Nguyễn Minh Tuấn" />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Chức Danh</label>
+                        <input type="text" class="form-control" id="s-agent-title" placeholder="Chuyên Gia BDS Huế 8+ Năm" />
+                      </div>
+                    </div>
+                    <div class="form-grid-3" style="margin-bottom:0;">
+                      <div class="form-group">
+                        <label class="form-label">Số Năm KN</label>
+                        <input type="number" class="form-control" id="s-agent-exp" min="0" placeholder="8" />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Số Giao Dịch</label>
+                        <input type="number" class="form-control" id="s-agent-deals" min="0" placeholder="150" />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Số Khách Hàng</label>
+                        <input type="number" class="form-control" id="s-agent-clients" min="0" placeholder="200" />
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Giới Thiệu Bản Thân</label>
+                      <textarea class="form-control" id="s-agent-bio" rows="6" placeholder="Giới thiệu về kinh nghiệm, chuyên môn của bạn..."></textarea>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="form-group">
+                      <label class="form-label">Ảnh Đại Diện</label>
+                      <div class="img-upload-zone" id="agent-upload-zone" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event,'agent-img','agent-preview')">
+                        <input type="file" accept="image/*" onchange="handleImgUpload(this,'agent-img','agent-preview')" />
+                        <div style="font-size:2rem;margin-bottom:8px;">👤</div>
+                        <div style="font-size:0.875rem;color:var(--text-2);">Kéo thả hoặc <strong style="color:var(--gold);">chọn ảnh</strong></div>
+                        <div style="font-size:0.75rem;color:var(--text-3);margin-top:4px;">JPG, PNG, WebP · Tối đa 5MB</div>
+                      </div>
+                      <div id="agent-preview" style="display:none;" class="img-preview">
+                        <img id="agent-img" src="" alt="Ảnh đại diện" />
+                        <button class="img-preview-remove" onclick="removeImg('agent-img','agent-preview','s-agent-avatar')">✕ Xóa</button>
+                      </div>
+                      <input type="hidden" id="s-agent-avatar" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="save-bar">
+              <button class="btn btn-ghost" onclick="loadAllSettings()">↩ Khôi Phục</button>
+              <button class="btn btn-gold" onclick="saveAgent()">💾 Lưu Thông Tin Môi Giới</button>
+            </div>
+          </div>
+
+          <!-- ══════════ TAB 3: TRANG CHỦ ══════════ -->
+          <div class="settings-tab-content" id="tab-homepage">
+
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div class="settings-section-icon">✨</div>
+                <div>
+                  <div class="settings-section-title">Phần Hero Banner</div>
+                  <div class="settings-section-desc">Tiêu đề, mô tả và ảnh nền trang chủ</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="form-group">
+                  <label class="form-label">Tiêu Đề Hero (H1)</label>
+                  <input type="text" class="form-control" id="s-hero-title" placeholder="Bất Động Sản Cao Cấp Tại Huế" style="font-size:1rem;" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Mô Tả / Subtitle</label>
+                  <input type="text" class="form-control" id="s-hero-subtitle" placeholder="Shophouse · Nhà Phố · Đất Nền · Căn Hộ" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Ảnh Hero Background</label>
+                  <div class="img-upload-zone" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event,'hero-img','hero-preview')">
+                    <input type="file" accept="image/*" onchange="handleImgUpload(this,'hero-img','hero-preview')" />
+                    <div style="font-size:2rem;margin-bottom:8px;">🖼️</div>
+                    <div style="font-size:0.875rem;color:var(--text-2);">Kéo thả hoặc <strong style="color:var(--gold);">chọn ảnh hero</strong></div>
+                    <div style="font-size:0.75rem;color:var(--text-3);margin-top:4px;">Khuyến nghị: 1920×1080px · JPG/WebP</div>
+                  </div>
+                  <div id="hero-preview" style="display:none;" class="img-preview">
+                    <img id="hero-img" src="" alt="Hero background" style="max-height:220px;" />
+                    <button class="img-preview-remove" onclick="removeImg('hero-img','hero-preview','s-hero-bg')">✕ Xóa</button>
+                  </div>
+                  <input type="hidden" id="s-hero-bg" />
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div class="settings-section-icon">📊</div>
+                <div>
+                  <div class="settings-section-title">Thống Kê &amp; Counter</div>
+                  <div class="settings-section-desc">Các số liệu hiển thị ở section thống kê trang chủ</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="counter-grid">
+                  <div class="counter-card">
+                    <label>🤝 Giao Dịch</label>
+                    <input type="text" id="s-stat-deals" placeholder="150+" />
+                  </div>
+                  <div class="counter-card">
+                    <label>⭐ Năm KN</label>
+                    <input type="text" id="s-stat-exp" placeholder="8+" />
+                  </div>
+                  <div class="counter-card">
+                    <label>😊 Khách Hàng</label>
+                    <input type="text" id="s-stat-clients" placeholder="200+" />
+                  </div>
+                  <div class="counter-card">
+                    <label>🏗️ KS Đã Bán</label>
+                    <input type="text" id="s-stat-sold" placeholder="3" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div class="settings-section-icon">💬</div>
+                <div>
+                  <div class="settings-section-title">Nội Dung Popup</div>
+                  <div class="settings-section-desc">Nội dung hiển thị trong popup chào mừng</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="form-group">
+                  <label class="form-label">Tiêu Đề Popup</label>
+                  <input type="text" class="form-control" id="s-popup-title" placeholder="🎉 Ưu Đãi Đặc Biệt Tháng Này!" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Nội Dung Popup</label>
+                  <textarea class="form-control" id="s-popup-content" rows="5" placeholder="Nhập nội dung popup hiển thị cho khách hàng..."></textarea>
+                </div>
+                <div class="toggle-wrap">
+                  <label class="toggle"><input type="checkbox" id="s-popup-enabled" /><span class="toggle-slider"></span></label>
+                  <span style="font-size:0.875rem;color:var(--text-2);">Hiển thị popup khi vào trang chủ</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="save-bar">
+              <button class="btn btn-ghost" onclick="loadAllSettings()">↩ Khôi Phục</button>
+              <button class="btn btn-gold" onclick="saveHomepage()">💾 Lưu Trang Chủ</button>
+            </div>
+          </div>
+
+          <!-- ══════════ TAB 4: SEO & ANALYTICS ══════════ -->
+          <div class="settings-tab-content" id="tab-seo">
+
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div class="settings-section-icon">🔍</div>
+                <div>
+                  <div class="settings-section-title">SEO Cơ Bản</div>
+                  <div class="settings-section-desc">Meta title, description và keywords</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="form-group">
+                  <label class="form-label">Meta Title <span style="color:var(--text-3);font-weight:400;text-transform:none;">(khuyến nghị ≤60 ký tự)</span></label>
+                  <input type="text" class="form-control" id="s-meta-title" placeholder="An Cựu Galleria Huế – Bất Động Sản Cao Cấp" maxlength="80" oninput="updateCharCount(this,'title-count',60)" />
+                  <div style="font-size:0.72rem;color:var(--text-3);margin-top:4px;text-align:right;"><span id="title-count">0</span>/60 ký tự</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Meta Description <span style="color:var(--text-3);font-weight:400;text-transform:none;">(khuyến nghị ≤160 ký tự)</span></label>
+                  <textarea class="form-control" id="s-meta-desc" rows="3" placeholder="Chuyên gia bất động sản cao cấp tại Huế. Shophouse, nhà phố, đất nền, căn hộ An Cựu Galleria." maxlength="200" oninput="updateCharCount(this,'desc-count',160)"></textarea>
+                  <div style="font-size:0.72rem;color:var(--text-3);margin-top:4px;text-align:right;"><span id="desc-count">0</span>/160 ký tự</div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Keywords <span style="color:var(--text-3);font-weight:400;text-transform:none;">(phân cách bằng dấu phẩy)</span></label>
+                  <input type="text" class="form-control" id="s-keywords" placeholder="bất động sản Huế, shophouse An Cựu, căn hộ Huế, đất nền Huế" />
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div class="settings-section-icon">📈</div>
+                <div>
+                  <div class="settings-section-title">Tracking &amp; Analytics</div>
+                  <div class="settings-section-desc">Google Analytics, Facebook Pixel và Search Console</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Google Analytics 4 ID</label>
+                    <div class="input-wrapper">
+                      <span class="input-icon">📊</span>
+                      <input type="text" class="form-control has-icon" id="s-ga-id" placeholder="G-XXXXXXXXXX" />
+                    </div>
+                    <div style="font-size:0.72rem;color:var(--text-3);margin-top:4px;">Lấy từ Google Analytics → Admin → Data Streams</div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Facebook Pixel ID</label>
+                    <div class="input-wrapper">
+                      <span class="input-icon">📘</span>
+                      <input type="text" class="form-control has-icon" id="s-pixel-id" placeholder="123456789012345" />
+                    </div>
+                    <div style="font-size:0.72rem;color:var(--text-3);margin-top:4px;">Lấy từ Meta Business → Events Manager</div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Google Search Console Verification Code</label>
+                  <input type="text" class="form-control" id="s-gsc-code" placeholder="google-site-verification=xxxxxxxxxxxxxxxx" />
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div class="settings-section-icon">💻</div>
+                <div>
+                  <div class="settings-section-title">Custom Code</div>
+                  <div class="settings-section-desc">Script tùy chỉnh cho &lt;head&gt; và robots.txt</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="form-group">
+                  <label class="form-label">Custom Head Code <span style="color:var(--text-3);font-weight:400;text-transform:none;">(chèn vào &lt;head&gt;)</span></label>
+                  <textarea class="form-control code-textarea" id="s-head-code" rows="7" placeholder="&lt;!-- Nhập script/tag tùy chỉnh (chat widget, tracking, v.v.) --&gt;&#10;&lt;script&gt;...&lt;/script&gt;"></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Nội Dung Robots.txt</label>
+                  <textarea class="form-control code-textarea" id="s-robots" rows="7" placeholder="User-agent: *&#10;Allow: /&#10;Sitemap: https://ancuugalleriahue.vn/sitemap.xml"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="save-bar">
+              <button class="btn btn-ghost" onclick="loadAllSettings()">↩ Khôi Phục</button>
+              <button class="btn btn-gold" onclick="saveSEO()">💾 Lưu Cài Đặt SEO</button>
+            </div>
+          </div>
+
+          <!-- ══════════ TAB 5: BẢO MẬT ══════════ -->
+          <div class="settings-tab-content" id="tab-security">
+
+            <!-- Session Info -->
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div class="settings-section-icon">🖥️</div>
+                <div>
+                  <div class="settings-section-title">Phiên Đăng Nhập Hiện Tại</div>
+                  <div class="settings-section-desc">Thông tin phiên đăng nhập đang hoạt động</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="session-card">
+                  <div class="session-dot"></div>
+                  <div>
+                    <strong style="color:var(--text);font-size:0.9rem;" id="session-email">—</strong>
+                    <div style="font-size:0.78rem;color:var(--text-3);margin-top:2px;">
+                      Đăng nhập lúc: <span id="session-time">—</span> · 
+                      Hết hạn: <span id="session-exp">—</span>
+                    </div>
+                  </div>
+                  <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="Auth.logout()">🚪 Đăng Xuất</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Change Password -->
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div class="settings-section-icon">🔑</div>
+                <div>
+                  <div class="settings-section-title">Đổi Mật Khẩu</div>
+                  <div class="settings-section-desc">Thay đổi mật khẩu đăng nhập admin</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="form-grid-3">
+                  <div class="form-group">
+                    <label class="form-label">Mật Khẩu Hiện Tại</label>
+                    <div class="input-wrapper">
+                      <span class="input-icon">🔒</span>
+                      <input type="password" class="form-control has-icon" id="s-old-pass" placeholder="••••••••" />
+                      <span class="input-eye" onclick="togglePwd('s-old-pass')">👁️</span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Mật Khẩu Mới</label>
+                    <div class="input-wrapper">
+                      <span class="input-icon">🔐</span>
+                      <input type="password" class="form-control has-icon" id="s-new-pass" placeholder="••••••••" oninput="checkPwdStrength(this.value)" />
+                      <span class="input-eye" onclick="togglePwd('s-new-pass')">👁️</span>
+                    </div>
+                    <div class="pwd-strength-bar"><div class="pwd-strength-fill" id="pwd-fill"></div></div>
+                    <div class="pwd-strength-text" id="pwd-text" style="color:var(--text-3);"></div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Xác Nhận Mật Khẩu Mới</label>
+                    <div class="input-wrapper">
+                      <span class="input-icon">✅</span>
+                      <input type="password" class="form-control has-icon" id="s-confirm-pass" placeholder="••••••••" />
+                      <span class="input-eye" onclick="togglePwd('s-confirm-pass')">👁️</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="save-bar" style="padding-top:0;">
+                  <button class="btn btn-gold" onclick="changePassword()">🔑 Đổi Mật Khẩu</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Change Email -->
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div class="settings-section-icon">📧</div>
+                <div>
+                  <div class="settings-section-title">Đổi Email Admin</div>
+                  <div class="settings-section-desc">Thay đổi địa chỉ email đăng nhập</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label">Email Hiện Tại</label>
+                    <input type="email" class="form-control" id="s-current-email" readonly style="opacity:0.6;cursor:not-allowed;" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Email Mới</label>
+                    <input type="email" class="form-control" id="s-new-email" placeholder="admin@ancuugalleriahue.vn" />
+                  </div>
+                </div>
+                <div class="save-bar" style="padding-top:0;">
+                  <button class="btn btn-gold" onclick="changeEmail()">📧 Cập Nhật Email</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Login History -->
+            <div class="settings-section">
+              <div class="settings-section-header">
+                <div class="settings-section-icon">📋</div>
+                <div>
+                  <div class="settings-section-title">Lịch Sử Đăng Nhập</div>
+                  <div class="settings-section-desc">3 lần đăng nhập gần nhất</div>
+                </div>
+              </div>
+              <div class="settings-section-body">
+                <div id="login-history">
+                  <!-- Populated by JS -->
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /tab-security -->
+
+        </div><!-- /settings-content -->
+      </div><!-- /settings-layout -->
+    </div><!-- /admin-content -->
+  </main>
+</div>
+
+<script src="../js/core.js"></script>
+<script>
+// ─── AUTH CHECK ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  if (!Auth.requireAuth()) return;
+  initPage();
+});
+
+// ─── INIT ────────────────────────────────────────────────────
+function initPage() {
+  var email = Auth.getEmail();
+  var el = document.getElementById('user-email-display');
+  if (el) el.textContent = email.split('@')[0];
+  var av = document.getElementById('user-avatar');
+  if (av) av.textContent = email[0].toUpperCase();
+  setActiveNav();
+  loadAllSettings();
+  loadSessionInfo();
+  loadLoginHistory();
+}
+
+// ─── TAB SWITCHING ───────────────────────────────────────────
+function switchTab(tabId) {
+  document.querySelectorAll('.settings-tab-content').forEach(function(el){el.classList.remove('active');});
+  document.querySelectorAll('.settings-nav-item').forEach(function(el){el.classList.remove('active');});
+  var tab = document.getElementById('tab-'+tabId);
+  var nav = document.getElementById('nav-'+tabId);
+  if (tab) tab.classList.add('active');
+  if (nav) nav.classList.add('active');
+  window._currentTab = tabId;
+}
+
+window._currentTab = 'basic';
+
+// ─── LOAD ALL SETTINGS ───────────────────────────────────────
+function loadAllSettings() {
+  var s = CMS.getSite();
+  // Basic
+  setVal('s-name', s.name);
+  setVal('s-tagline', s.tagline);
+  setVal('s-hotline', s.hotline);
+  setVal('s-email', s.email);
+  setVal('s-address', s.address);
+  setVal('s-hours', s.hours);
+  setVal('s-facebook', s.facebook);
+  setVal('s-zalo', s.zalo);
+  setVal('s-tiktok', s.tiktok||'');
+  setVal('s-youtube', s.youtube||'');
+  // Agent
+  setVal('s-agent-name', s.agent_name);
+  setVal('s-agent-title', s.agent_title);
+  setVal('s-agent-exp', s.agent_exp||'8');
+  setVal('s-agent-deals', s.agent_deals||'150');
+  setVal('s-agent-clients', s.agent_clients||'200');
+  setVal('s-agent-bio', s.agent_bio||'');
+  if (s.agent_avatar) showExistingImg('agent-img','agent-preview',s.agent_avatar);
+  setVal('s-agent-avatar', s.agent_avatar||'');
+  // Homepage
+  setVal('s-hero-title', s.hero_title);
+  setVal('s-hero-subtitle', s.hero_subtitle);
+  if (s.hero_bg) showExistingImg('hero-img','hero-preview',s.hero_bg);
+  setVal('s-hero-bg', s.hero_bg||'');
+  setVal('s-stat-deals', s.stat_deals||'150+');
+  setVal('s-stat-exp', s.stat_exp||'8+');
+  setVal('s-stat-clients', s.stat_clients||'200+');
+  setVal('s-stat-sold', s.stat_sold||'3');
+  setVal('s-popup-title', s.popup_title||'');
+  setVal('s-popup-content', s.popup_content||'');
+  if (document.getElementById('s-popup-enabled')) document.getElementById('s-popup-enabled').checked = !!s.popup_enabled;
+  // SEO
+  setVal('s-meta-title', s.meta_title||'');
+  setVal('s-meta-desc', s.meta_desc||'');
+  setVal('s-keywords', s.keywords||'');
+  setVal('s-ga-id', s.ga_id||'');
+  setVal('s-pixel-id', s.pixel_id||'');
+  setVal('s-gsc-code', s.gsc_code||'');
+  setVal('s-head-code', s.head_code||'');
+  setVal('s-robots', s.robots_txt||'User-agent: *\nAllow: /\nSitemap: https://ancuugalleriahue.vn/sitemap.xml');
+  // Update char counts
+  updateCharCount(document.getElementById('s-meta-title'), 'title-count', 60);
+  updateCharCount(document.getElementById('s-meta-desc'), 'desc-count', 160);
+}
+
+function setVal(id, val) { var el = document.getElementById(id); if (el) el.value = val||''; }
+function getVal(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+function showExistingImg(imgId, previewId, src) {
+  var img = document.getElementById(imgId);
+  var pre = document.getElementById(previewId);
+  if (img && pre && src) { img.src = src; pre.style.display='block'; }
+}
+
+function removeImg(imgId, previewId, hiddenId) {
+  var img=document.getElementById(imgId), pre=document.getElementById(previewId), hid=document.getElementById(hiddenId);
+  if(img) img.src='';
+  if(pre) pre.style.display='none';
+  if(hid) hid.value='';
+}
+
+// ─── IMAGE UPLOAD ────────────────────────────────────────────
+function handleImgUpload(input, imgId, previewId) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('Ảnh phải nhỏ hơn 5MB!','error'); return; }
+  var preview = document.getElementById(previewId);
+  var img = document.getElementById(imgId);
+  showToast('Đang tải ảnh lên...','info');
+  Uploader.uploadToSupabase(file, 'property-images').then(function(url) {
+    if (img) img.src = url;
+    if (preview) preview.style.display='block';
+    // Store URL in hidden input based on imgId
+    var hidMap = {'agent-img':'s-agent-avatar','hero-img':'s-hero-bg'};
+    var hidId = hidMap[imgId];
+    if (hidId) setVal(hidId, url);
+    showToast('Ảnh đã được tải lên!','success');
+  });
+}
+
+function handleDrop(event, imgId, previewId) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('drag-over');
+  var file = event.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    var fakeInput = {files:[file]};
+    handleImgUpload(fakeInput, imgId, previewId);
+  }
+}
+
+// ─── SAVE FUNCTIONS ──────────────────────────────────────────
+function saveCurrentTab() {
+  var tab = window._currentTab || 'basic';
+  if (tab==='basic') saveBasic();
+  else if (tab==='agent') saveAgent();
+  else if (tab==='homepage') saveHomepage();
+  else if (tab==='seo') saveSEO();
+  else if (tab==='security') showToast('Sử dụng các nút trong tab Bảo Mật để thay đổi!','info');
+}
+
+function saveBasic() {
+  CMS.saveSite({
+    name: getVal('s-name'),
+    tagline: getVal('s-tagline'),
+    hotline: getVal('s-hotline'),
+    email: getVal('s-email'),
+    address: getVal('s-address'),
+    hours: getVal('s-hours'),
+    facebook: getVal('s-facebook'),
+    zalo: getVal('s-zalo'),
+    tiktok: getVal('s-tiktok'),
+    youtube: getVal('s-youtube')
+  });
+  showToast('Đã lưu Thông Tin Cơ Bản!','success');
+}
+
+function saveAgent() {
+  CMS.saveSite({
+    agent_name: getVal('s-agent-name'),
+    agent_title: getVal('s-agent-title'),
+    agent_exp: getVal('s-agent-exp'),
+    agent_deals: getVal('s-agent-deals'),
+    agent_clients: getVal('s-agent-clients'),
+    agent_bio: getVal('s-agent-bio'),
+    agent_avatar: getVal('s-agent-avatar')
+  });
+  showToast('Đã lưu Thông Tin Môi Giới!','success');
+}
+
+function saveHomepage() {
+  var popupEnabled = document.getElementById('s-popup-enabled');
+  CMS.saveSite({
+    hero_title: getVal('s-hero-title'),
+    hero_subtitle: getVal('s-hero-subtitle'),
+    hero_bg: getVal('s-hero-bg'),
+    stat_deals: getVal('s-stat-deals'),
+    stat_exp: getVal('s-stat-exp'),
+    stat_clients: getVal('s-stat-clients'),
+    stat_sold: getVal('s-stat-sold'),
+    popup_title: getVal('s-popup-title'),
+    popup_content: getVal('s-popup-content'),
+    popup_enabled: popupEnabled ? popupEnabled.checked : false
+  });
+  showToast('Đã lưu Trang Chủ!','success');
+}
+
+function saveSEO() {
+  CMS.saveSite({
+    meta_title: getVal('s-meta-title'),
+    meta_desc: getVal('s-meta-desc'),
+    keywords: getVal('s-keywords'),
+    ga_id: getVal('s-ga-id'),
+    pixel_id: getVal('s-pixel-id'),
+    gsc_code: getVal('s-gsc-code'),
+    head_code: document.getElementById('s-head-code').value,
+    robots_txt: document.getElementById('s-robots').value
+  });
+  showToast('Đã lưu Cài Đặt SEO!','success');
+}
+
+// ─── CHARACTER COUNT ─────────────────────────────────────────
+function updateCharCount(input, countId, max) {
+  if (!input) return;
+  var len = input.value.length;
+  var el = document.getElementById(countId);
+  if (el) {
+    el.textContent = len;
+    el.style.color = len > max ? 'var(--danger)' : len > max*0.85 ? 'var(--warning)' : 'var(--text-3)';
+  }
+}
+
+// ─── PASSWORD FUNCTIONS ──────────────────────────────────────
+function togglePwd(id) {
+  var el = document.getElementById(id);
+  if (el) el.type = el.type==='password' ? 'text' : 'password';
+}
+
+function checkPwdStrength(pwd) {
+  var fill = document.getElementById('pwd-fill');
+  var text = document.getElementById('pwd-text');
+  if (!fill || !text) return;
+  var score = 0;
+  if (pwd.length >= 8) score++;
+  if (/[A-Z]/.test(pwd)) score++;
+  if (/[0-9]/.test(pwd)) score++;
+  if (/[^A-Za-z0-9]/.test(pwd)) score++;
+  if (pwd.length >= 12) score++;
+  var levels = [
+    {w:'0%',c:'var(--danger)',t:''},
+    {w:'25%',c:'var(--danger)',t:'Yếu'},
+    {w:'50%',c:'var(--warning)',t:'Trung bình'},
+    {w:'75%',c:'var(--info)',t:'Tốt'},
+    {w:'100%',c:'var(--success)',t:'Rất mạnh'}
+  ];
+  var lv = Math.min(score, 4);
+  fill.style.width = levels[lv].w;
+  fill.style.background = levels[lv].c;
+  text.textContent = levels[lv].t;
+  text.style.color = levels[lv].c;
+}
+
+function changePassword() {
+  var oldPass = document.getElementById('s-old-pass').value;
+  var newPass = document.getElementById('s-new-pass').value;
+  var confirm = document.getElementById('s-confirm-pass').value;
+  if (!oldPass || !newPass || !confirm) { showToast('Vui lòng điền đầy đủ thông tin!','error'); return; }
+  if (newPass !== confirm) { showToast('Mật khẩu xác nhận không khớp!','error'); return; }
+  if (newPass.length < 8) { showToast('Mật khẩu mới phải có ít nhất 8 ký tự!','error'); return; }
+  // Verify old password
+  if (btoa(oldPass) !== localStorage.getItem('acg_admin_pass') && btoa(oldPass) !== 'MTIzNDU2QDY=') {
+    showToast('Mật khẩu hiện tại không đúng!','error'); return;
+  }
+  localStorage.setItem('acg_admin_pass', btoa(newPass));
+  document.getElementById('s-old-pass').value = '';
+  document.getElementById('s-new-pass').value = '';
+  document.getElementById('s-confirm-pass').value = '';
+  document.getElementById('pwd-fill').style.width = '0%';
+  document.getElementById('pwd-text').textContent = '';
+  showToast('Đã đổi mật khẩu thành công!','success');
+}
+
+function changeEmail() {
+  var newEmail = document.getElementById('s-new-email').value.trim();
+  if (!newEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+    showToast('Email không hợp lệ!','error'); return;
+  }
+  localStorage.setItem('acg_admin_email', newEmail);
+  document.getElementById('s-current-email').value = newEmail;
+  document.getElementById('s-new-email').value = '';
+  document.getElementById('user-email-display').textContent = newEmail.split('@')[0];
+  showToast('Đã cập nhật email admin!','success');
+}
+
+// ─── SESSION INFO ────────────────────────────────────────────
+function loadSessionInfo() {
+  var email = Auth.getEmail();
+  var exp = parseInt(localStorage.getItem('acg_admin_exp')||'0');
+  document.getElementById('session-email').textContent = email;
+  document.getElementById('session-time').textContent = new Date(exp - 86400000).toLocaleString('vi-VN');
+  document.getElementById('session-exp').textContent = new Date(exp).toLocaleString('vi-VN');
+  document.getElementById('s-current-email').value = email;
+}
+
+// ─── LOGIN HISTORY (MOCK) ─────────────────────────────────────
+function loadLoginHistory() {
+  var email = Auth.getEmail();
+  var hist = [
+    { time: new Date(Date.now() - 300000), ip: '171.237.xxx.xxx', device: '💻 Chrome trên Windows 11', status: 'success' },
+    { time: new Date(Date.now() - 86400000), ip: '171.237.xxx.xxx', device: '📱 Safari trên iPhone 15', status: 'success' },
+    { time: new Date(Date.now() - 172800000), ip: '27.79.xxx.xxx', device: '💻 Edge trên Windows 10', status: 'failed' }
+  ];
+  var html = '';
+  hist.forEach(function(h) {
+    var statusBadge = h.status==='success'
+      ? '<span class="badge badge-green">Thành công</span>'
+      : '<span class="badge badge-red">Thất bại</span>';
+    html += '<div class="login-history-item">'
+      + '<div class="login-history-icon">'+(h.status==='success'?'✅':'❌')+'</div>'
+      + '<div class="login-history-info" style="flex:1;">'
+      + '<strong>'+h.device+'</strong>'
+      + '<span>'+h.time.toLocaleString('vi-VN')+' · IP: '+h.ip+'</span>'
+      + '</div>'
+      + statusBadge
+      + '</div>';
+  });
+  var el = document.getElementById('login-history');
+  if (el) el.innerHTML = html;
+}
+</script>
+</body>
+</html>
