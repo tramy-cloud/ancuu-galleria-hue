@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản Lý Dự Án – An Cựu Galleria Admin</title>
+  <link rel="stylesheet" href="../admin.css" />
+  <script src="../js/core.js" defer></script>
+  <style>
+    /* ── Projects Grid Cards ── */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 1200px) { .projects-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 640px)  { .projects-grid { grid-template-columns: 1fr; } }
+
+    .project-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: all 0.25s;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .project-card:hover {
+      border-color: var(--border-gold);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light), transparent);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .project-card:hover::before { opacity: 1; }
+
+    .project-card-hero {
+      aspect-ratio: 16/9;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-card);
+    }
+    .project-card-hero img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s;
+    }
+    .project-card:hover .project-card-hero img { transform: scale(1.06); }
+    .project-card-hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.7));
+    }
+    .project-hero-badge {
+      position: absolute;
+      top: 12px; left: 12px;
+    }
+    .project-hero-featured {
+      position: absolute;
+      top: 12px; right: 12px;
+      background: rgba(212,175,55,0.9);
+      color: #1C2139;
+      font-size: 0.7rem; font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+      backdrop-filter: blur(4px);
+    }
+
+    .project-card-body {
+      padding: 18px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .project-card-name {
+      font-family: var(--font-heading);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .project-card-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+      flex: 1;
+    }
+    .project-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--text-2);
+    }
+    .project-meta-icon { width: 16px; text-align: center; font-size: 0.9rem; }
+    .project-price-label {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--gold);
+      margin-bottom: 14px;
+    }
+    .project-types {
+      display: flex; flex-wrap: wrap; gap: 5px;
+      margin-bottom: 12px;
+    }
+    .project-type-chip {
+      padding: 3px 9px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+    .project-card-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .project-last-updated {
+      font-size: 0.72rem;
+      color: var(--text-3);
+    }
+    .project-actions {
+      display: flex; gap: 6px;
+    }
+
+    /* ── Modal Fields ── */
+    .modal-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 640px) { .modal-two-col { grid-template-columns: 1fr; } }
+
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .checkbox-item input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+    .checkbox-item span {
+      font-size: 0.875rem;
+      color: var(--text-2);
+    }
+
+    .gallery-preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .gallery-thumb {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .gallery-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .gallery-thumb-remove {
+      position: absolute;
+      top: 3px; right: 3px;
+      width: 18px; height: 18px;
+      background: rgba(239,68,68,0.9);
+      border-radius: 50%;
+      color: #fff; font-size: 0.65rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+
+    /* commission input */
+    .commission-input-wrap {
+      position: relative;
+    }
+    .commission-input-wrap .form-control { padding-right: 36px; }
+    .commission-suffix {
+      position: absolute;
+      right: 14px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-3);
+      font-size: 0.875rem;
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+    /* Empty state for grid */
+    .projects-empty {
+      grid-column: 1 / -1;
+    }
+  </style>
+</head>
+<body>
+
+<script>
+  (function() {
+    var token = localStorage.getItem('acg_admin_token');
+    var exp = parseInt(localStorage.getItem('acg_admin_exp') || '0');
+    if (!token || Date.now() >= exp) window.location.href = '/admin/index.html';
+  })();
+</script>
+
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">A</div>
+        <div class="sidebar-logo-text">
+          <strong>An Cựu Galleria</strong>
+          <span>Admin Panel</span>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Tổng Quan</div>
+      <a href="/admin/index.html" class="admin-nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+      <div class="nav-section-title">Nội Dung</div>
+      <a href="properties.html" class="admin-nav-link"><span class="nav-icon">🏠</span> Bất Động Sản</a>
+      <a href="projects.html" class="admin-nav-link active"><span class="nav-icon">🏗️</span> Dự Án</a>
+      <a href="blog.html" class="admin-nav-link"><span class="nav-icon">📝</span> Blog</a>
+      <a href="media.html" class="admin-nav-link"><span class="nav-icon">🖼️</span> Media</a>
+      <div class="nav-section-title">Kinh Doanh</div>
+      <a href="leads.html" class="admin-nav-link">
+        <span class="nav-icon">👥</span> Khách Hàng
+        <span class="nav-badge" id="sidebarLeadCount">0</span>
+      </a>
+      <a href="agents.html" class="admin-nav-link"><span class="nav-icon">🤝</span> Đại Lý</a>
+      <div class="nav-section-title">Hệ Thống</div>
+      <a href="settings.html" class="admin-nav-link"><span class="nav-icon">⚙️</span> Cài Đặt</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="sidebarAvatar">A</div>
+        <div class="sidebar-user-info">
+          <strong id="sidebarEmail">Admin</strong>
+          <span>Quản trị viên</span>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-full btn-sm" onclick="Auth.logout()">🚪 Đăng Xuất</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" onclick="document.getElementById('adminSidebar').classList.toggle('open')">☰</button>
+        <div>
+          <div class="topbar-title">Quản Lý Dự Án</div>
+          <div class="topbar-breadcrumb">Admin / Dự Án</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-gold btn-sm" onclick="openProjectModal()">🏗️ Thêm Dự Án Mới</button>
+      </div>
+    </header>
+
+    <div class="admin-content">
+
+      <!-- A. STATS -->
+      <div class="stats-grid" style="margin-bottom:28px;">
+        <div class="stat-card">
+          <div class="stat-icon gold">🏗️</div>
+          <div><div class="stat-value" id="statTotal">0</div><div class="stat-label">Tổng dự án</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">🟢</div>
+          <div><div class="stat-value" id="statActive">0</div><div class="stat-label">Đang mở bán</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue">🔵</div>
+          <div><div class="stat-value" id="statSoon">0</div><div class="stat-label">Sắp mở bán</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">✅</div>
+          <div><div class="stat-value" id="statDone">0</div><div class="stat-label">Hoàn thành</div></div>
+        </div>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="filter-bar" style="margin-bottom:24px;">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="projSearch" placeholder="Tìm tên dự án, địa điểm..." oninput="filterProjects()" />
+        </div>
+        <select class="filter-select" id="projStatusFilter" onchange="filterProjects()">
+          <option value="">Tất cả trạng thái</option>
+          <option value="Đang mở bán">Đang mở bán</option>
+          <option value="Sắp mở bán">Sắp mở bán</option>
+          <option value="Hoàn thành">Hoàn thành</option>
+        </select>
+        <button class="btn btn-gold btn-sm" onclick="openProjectModal()">🏗️ Thêm Dự Án</button>
+      </div>
+
+      <!-- B. PROJECTS GRID -->
+      <div class="projects-grid" id="projectsGrid">
+        <!-- Rendered by JS -->
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── ADD/EDIT PROJECT MODAL ──────────────────────────────────── -->
+<div class="modal-overlay" id="projectModal" style="display:none;" onclick="if(event.target===this)closeProjectModal()">
+  <div class="modal-box modal-lg" style="max-width:860px;">
+    <div class="modal-header">
+      <div class="modal-title" id="projectModalTitle">🏗️ Thêm Dự Án Mới</div>
+      <button class="modal-close-btn" onclick="closeProjectModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:0;">
+
+      <!-- Tabs -->
+      <div class="admin-tabs" style="margin:0;padding:0 24px;">
+        <button class="admin-tab active" id="tabInfoBtn" onclick="switchTab('info')">📋 Thông Tin Chung</button>
+        <button class="admin-tab" id="tabMediaBtn" onclick="switchTab('media')">🖼 Media</button>
+        <button class="admin-tab" id="tabSalesBtn" onclick="switchTab('sales')">💰 Bán Hàng</button>
+      </div>
+
+      <!-- Tab: Info -->
+      <div id="tabInfo" style="padding:24px;">
+        <div class="modal-two-col">
+          <div class="form-group">
+            <label class="form-label">Tên dự án <span style="color:var(--danger)">*</span></label>
+            <input type="text" class="form-control" id="projName" placeholder="VD: An Cựu Galleria Huế" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Chủ đầu tư</label>
+            <input type="text" class="form-control" id="projInvestor" placeholder="VD: HUD, Đất Xanh..." />
+          </div>
+        </div>
+        <div class="modal-two-col">
+          <div class="form-group">
+            <label class="form-label">Địa điểm / Khu vực <span style="color:var(--danger)">*</span></label>
+            <input type="text" class="form-control" id="projLocation" placeholder="VD: An Cựu, TP. Huế" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Trạng thái</label>
+            <select class="form-control" id="projStatus">
+              <option value="Đang mở bán">🟢 Đang mở bán</option>
+              <option value="Sắp mở bán">🔵 Sắp mở bán</option>
+              <option value="Hoàn thành">✅ Hoàn thành</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-two-col">
+          <div class="form-group">
+            <label class="form-label">Giá từ</label>
+            <input type="text" class="form-control" id="projPrice" placeholder="VD: Từ 2,8 tỷ" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tổng sản phẩm</label>
+            <input type="number" class="form-control" id="projUnits" placeholder="VD: 280" min="0" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Loại hình sản phẩm</label>
+          <div class="checkbox-group">
+            <label class="checkbox-item">
+              <input type="checkbox" id="typeShophouse" value="Shophouse" />
+              <span>🏪 Shophouse</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="typeCondo" value="Căn Hộ" />
+              <span>🏢 Căn Hộ</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="typeLand" value="Đất Nền" />
+              <span>🌿 Đất Nền</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" id="typeHouse" value="Nhà Phố" />
+              <span>🏠 Nhà Phố</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mô tả dự án</label>
+          <textarea class="form-control" id="projDesc" rows="4" placeholder="Mô tả tổng quan về dự án, tiện ích, đặc điểm nổi bật..."></textarea>
+        </div>
+      </div>
+
+      <!-- Tab: Media -->
+      <div id="tabMedia" style="padding:24px;display:none;">
+        <div class="form-group">
+          <label class="form-label">Ảnh Hero (ảnh bìa chính)</label>
+          <div class="cover-preview-box" id="projHeroPreviewBox" style="width:100%;aspect-ratio:16/9;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border);background:var(--bg-card);display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+            <div id="projHeroEmpty" style="color:var(--text-3);text-align:center;">
+              <div style="font-size:2.5rem;">🏗️</div>
+              <div style="font-size:0.8rem;margin-top:6px;">Chưa có ảnh hero</div>
+            </div>
+            <img id="projHeroImg" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;" />
+          </div>
+          <div class="upload-zone" style="padding:14px 12px;position:relative;">
+            <input type="file" accept="image/*" onchange="handleHeroUpload(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;" />
+            <div class="upload-zone-text"><strong>Chọn ảnh hero</strong> hoặc kéo thả</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Gallery ảnh (nhiều ảnh)</label>
+          <div class="upload-zone" style="padding:20px 12px;position:relative;">
+            <input type="file" accept="image/*" multiple onchange="handleGalleryUpload(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;" />
+            <div class="upload-zone-icon">🖼️</div>
+            <div class="upload-zone-text"><strong>Chọn nhiều ảnh</strong> cho gallery</div>
+          </div>
+          <div class="gallery-preview" id="galleryPreview"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">URL Video (YouTube / Vimeo)</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🎥</span>
+            <input type="url" class="form-control has-icon" id="projVideo" placeholder="https://youtube.com/watch?v=..." />
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Sales -->
+      <div id="tabSales" style="padding:24px;display:none;">
+        <div class="modal-two-col">
+          <div class="form-group">
+            <label class="form-label">Hoa hồng môi giới</label>
+            <div class="commission-input-wrap">
+              <input type="number" class="form-control" id="projCommission" placeholder="VD: 2.5" min="0" max="100" step="0.1" />
+              <span class="commission-suffix">%</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Diện tích từ (m²)</label>
+            <input type="text" class="form-control" id="projArea" placeholder="VD: 50 – 120 m²" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tiện ích dự án</label>
+          <textarea class="form-control" id="projAmenities" rows="3" placeholder="VD: Hồ bơi, Gym, BBQ, Sân tennis, An ninh 24/7..."></textarea>
+        </div>
+        <div class="form-group" style="padding:16px;background:var(--bg-card);border-radius:var(--radius-sm);border:1px solid var(--border);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0;">
+            <div>
+              <div style="font-size:0.875rem;font-weight:600;color:var(--text);">⭐ Nổi bật trang chủ</div>
+              <div style="font-size:0.75rem;color:var(--text-3);margin-top:2px;">Hiển thị dự án trên trang chủ website</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="projFeatured" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ghi chú nội bộ</label>
+          <textarea class="form-control" id="projNotes" rows="3" placeholder="Ghi chú cho đội ngũ bán hàng..."></textarea>
+        </div>
+      </div>
+
+    </div><!-- /modal-body -->
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeProjectModal()">Hủy</button>
+      <button class="btn btn-outline btn-sm" onclick="saveProject('draft')">💾 Lưu Nháp</button>
+      <button class="btn btn-gold btn-sm" onclick="saveProject('active')">✅ Lưu Dự Án</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirm-modal" style="display:none;" onclick="if(event.target===this)closeModal('confirm-modal')">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">⚠️ Xác nhận</div>
+      <button class="modal-close-btn" onclick="closeModal('confirm-modal')">✕</button>
+    </div>
+    <div class="modal-body"><p id="confirm-msg" style="color:var(--text-2);line-height:1.7;"></p></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('confirm-modal')">Hủy</button>
+      <button class="btn btn-danger btn-sm" id="confirm-ok">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Mock Projects Data ─────────────────────────────────────────
+const MOCK_PROJECTS = [
+  {
+    id: 1,
+    name: 'An Cựu Galleria Huế',
+    investor: 'HUD Huế',
+    location: 'An Cựu, TP. Huế',
+    status: 'Đang mở bán',
+    price: 'Từ 2,8 tỷ',
+    units: 280,
+    types: ['Shophouse', 'Căn Hộ'],
+    desc: 'Dự án căn hộ – shophouse cao cấp nhất tại trung tâm TP. Huế, tích hợp đầy đủ tiện ích sống đẳng cấp.',
+    image: '/images/apartment.png',
+    gallery: [],
+    video: '',
+    commission: 2.5,
+    area: '55 – 120 m²',
+    amenities: 'Hồ bơi, Gym, BBQ, Sân tennis, An ninh 24/7',
+    featured: true,
+    notes: '',
+    updated: '2025-06-01'
+  },
+  {
+    id: 2,
+    name: 'Eco Garden Huế',
+    investor: 'Đất Xanh Miền Trung',
+    location: 'Hương Thủy, Huế',
+    status: 'Sắp mở bán',
+    price: 'Từ 3,5 tỷ',
+    units: 150,
+    types: ['Nhà Phố', 'Đất Nền'],
+    desc: 'Khu đô thị sinh thái Eco Garden – không gian xanh giữa lòng Huế, nơi lý tưởng cho gia đình hiện đại.',
+    image: '/images/land.png',
+    gallery: [],
+    video: '',
+    commission: 3,
+    area: '80 – 200 m²',
+    amenities: 'Công viên, Hồ sinh thái, Trường học, Siêu thị',
+    featured: false,
+    notes: '',
+    updated: '2025-05-20'
+  },
+  {
+    id: 3,
+    name: 'Royal Park Huế',
+    investor: 'Tân Hoàng Minh',
+    location: 'An Vân Dương, Huế',
+    status: 'Đang mở bán',
+    price: 'Từ 1,2 tỷ',
+    units: 400,
+    types: ['Đất Nền', 'Nhà Phố'],
+    desc: 'Khu đô thị Royal Park tọa lạc tại trung tâm khu đô thị An Vân Dương – pháp lý hoàn chỉnh, giá tốt.',
+    image: '/images/shophouse.png',
+    gallery: [],
+    video: '',
+    commission: 1.5,
+    area: '60 – 150 m²',
+    amenities: 'Công viên, Đường nội khu, Camera an ninh',
+    featured: true,
+    notes: '',
+    updated: '2025-05-10'
+  },
+  {
+    id: 4,
+    name: 'Riverside Huế',
+    investor: 'Vingroup',
+    location: 'Phú Vang, Huế',
+    status: 'Hoàn thành',
+    price: 'Từ 4,2 tỷ',
+    units: 95,
+    types: ['Shophouse', 'Nhà Phố'],
+    desc: 'Dự án đã hoàn thành bàn giao năm 2024. Shophouse và nhà phố mặt sông Hương.',
+    image: '/images/hero-bg.png',
+    gallery: [],
+    video: '',
+    commission: 0,
+    area: '100 – 300 m²',
+    amenities: 'Bờ kè sông, Đường nội khu, Camera',
+    featured: false,
+    notes: 'Đã bàn giao toàn bộ Q4/2024.',
+    updated: '2025-04-15'
+  }
+];
+
+let projects = [];
+let editingProjectId = null;
+let heroImageUrl = '';
+let galleryImages = [];
+let activeTab = 'info';
+
+// ── Init ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const cms = CMS.get();
+  projects = cms.projects_full && cms.projects_full.length ? cms.projects_full : MOCK_PROJECTS.map(p => ({...p}));
+  saveProjects();
+
+  const email = Auth.getEmail();
+  document.getElementById('sidebarEmail').textContent = email.split('@')[0];
+  document.getElementById('sidebarAvatar').textContent = email[0].toUpperCase();
+  const leads = CMS.getLeads();
+  const newLeads = leads.filter(l => l.status === 'new').length;
+  if (newLeads > 0) document.getElementById('sidebarLeadCount').textContent = newLeads;
+  else document.getElementById('sidebarLeadCount').style.display = 'none';
+
+  setActiveNav();
+  renderStats();
+  filterProjects();
+});
+
+function saveProjects() {
+  const cms = CMS.get(); cms.projects_full = projects; CMS.set(cms);
+}
+
+// ── Stats ──────────────────────────────────────────────────────
+function renderStats() {
+  document.getElementById('statTotal').textContent = projects.length;
+  document.getElementById('statActive').textContent = projects.filter(p => p.status === 'Đang mở bán').length;
+  document.getElementById('statSoon').textContent = projects.filter(p => p.status === 'Sắp mở bán').length;
+  document.getElementById('statDone').textContent = projects.filter(p => p.status === 'Hoàn thành').length;
+}
+
+// ── Filter ────────────────────────────────────────────────────
+function filterProjects() {
+  const q = document.getElementById('projSearch').value.toLowerCase();
+  const status = document.getElementById('projStatusFilter').value;
+  const filtered = projects.filter(p => {
+    const matchQ = !q || p.name.toLowerCase().includes(q) || (p.location||'').toLowerCase().includes(q);
+    return matchQ && (!status || p.status === status);
+  });
+  renderProjectsGrid(filtered);
+}
+
+// ── Render Grid ───────────────────────────────────────────────
+function renderProjectsGrid(data) {
+  const grid = document.getElementById('projectsGrid');
+  if (!data.length) {
+    grid.innerHTML = '<div class="projects-empty"><div class="empty-state"><div class="empty-icon">🏗️</div><div class="empty-title">Chưa có dự án nào</div><div class="empty-desc">Thêm dự án mới để bắt đầu quản lý.</div><button class="btn btn-gold btn-sm" onclick="openProjectModal()" style="margin-top:16px;">🏗️ Thêm Dự Án Mới</button></div></div>';
+    return;
+  }
+  grid.innerHTML = data.map(p => `
+    <div class="project-card">
+      <div class="project-card-hero">
+        ${p.image
+          ? `<img src="${p.image}" alt="${escHtml(p.name)}" onerror="this.style.display='none'" />`
+          : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:3rem;color:var(--text-3);">🏗️</div>`}
+        <div class="project-card-hero-overlay"></div>
+        <div class="project-hero-badge">${statusBadge(p.status)}</div>
+        ${p.featured ? '<div class="project-hero-featured">⭐ Nổi bật</div>' : ''}
+      </div>
+      <div class="project-card-body">
+        <div class="project-card-name">${escHtml(p.name)}</div>
+        <div class="project-price-label">${escHtml(p.price || '–')}</div>
+        <div class="project-card-meta">
+          <div class="project-meta-row">
+            <span class="project-meta-icon">📍</span>
+            <span>${escHtml(p.location)}</span>
+          </div>
+          ${p.investor ? `<div class="project-meta-row"><span class="project-meta-icon">🏢</span><span>${escHtml(p.investor)}</span></div>` : ''}
+          <div class="project-meta-row">
+            <span class="project-meta-icon">🔑</span>
+            <span>${p.units || 0} sản phẩm</span>
+          </div>
+          ${p.commission ? `<div class="project-meta-row"><span class="project-meta-icon">💰</span><span>Hoa hồng: <strong style="color:var(--gold);">${p.commission}%</strong></span></div>` : ''}
+        </div>
+        ${p.types && p.types.length ? `
+        <div class="project-types">
+          ${p.types.map(t => `<span class="project-type-chip">${escHtml(t)}</span>`).join('')}
+        </div>` : ''}
+      </div>
+      <div class="project-card-footer">
+        <div class="project-last-updated">Cập nhật: ${formatDate(p.updated)}</div>
+        <div class="project-actions">
+          <button class="btn btn-outline btn-sm btn-icon" onclick="editProject(${p.id})" title="Chỉnh sửa">✏️</button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteProject(${p.id})" title="Xóa">🗑️</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function statusBadge(status) {
+  const map = {
+    'Đang mở bán': 'badge-green',
+    'Sắp mở bán': 'badge-blue',
+    'Hoàn thành': 'badge-gray'
+  };
+  const icon = { 'Đang mở bán': '🟢', 'Sắp mở bán': '🔵', 'Hoàn thành': '✅' };
+  return `<span class="badge ${map[status] || 'badge-gray'}">${icon[status] || ''} ${escHtml(status)}</span>`;
+}
+
+// ── CRUD ──────────────────────────────────────────────────────
+function deleteProject(id) {
+  const p = projects.find(x => x.id === id);
+  confirmAction('Xóa dự án "' + p.name + '"? Hành động này không thể hoàn tác.', () => {
+    projects = projects.filter(x => x.id !== id);
+    saveProjects(); renderStats(); filterProjects();
+    showToast('Đã xóa dự án.', 'success');
+  });
+}
+
+// ── Modal ─────────────────────────────────────────────────────
+function openProjectModal(id) {
+  id = id || null;
+  editingProjectId = id;
+  heroImageUrl = '';
+  galleryImages = [];
+  activeTab = 'info';
+  switchTab('info');
+
+  if (id) {
+    const p = projects.find(x => x.id === id);
+    document.getElementById('projectModalTitle').textContent = '✏️ Chỉnh Sửa: ' + p.name;
+    document.getElementById('projName').value = p.name;
+    document.getElementById('projInvestor').value = p.investor || '';
+    document.getElementById('projLocation').value = p.location;
+    document.getElementById('projStatus').value = p.status;
+    document.getElementById('projPrice').value = p.price || '';
+    document.getElementById('projUnits').value = p.units || '';
+    document.getElementById('projDesc').value = p.desc || '';
+    document.getElementById('projCommission').value = p.commission || '';
+    document.getElementById('projArea').value = p.area || '';
+    document.getElementById('projAmenities').value = p.amenities || '';
+    document.getElementById('projFeatured').checked = !!p.featured;
+    document.getElementById('projNotes').value = p.notes || '';
+    document.getElementById('projVideo').value = p.video || '';
+    ['Shophouse','Căn Hộ','Đất Nền','Nhà Phố'].forEach(t => {
+      const id2 = 'type' + t.replace(/\s/g,'').replace('Căn','Can').replace('Đất','Dat').replace('Nhà','Nha');
+      // map
+    });
+    document.getElementById('typeShophouse').checked = (p.types||[]).includes('Shophouse');
+    document.getElementById('typeCondo').checked = (p.types||[]).includes('Căn Hộ');
+    document.getElementById('typeLand').checked = (p.types||[]).includes('Đất Nền');
+    document.getElementById('typeHouse').checked = (p.types||[]).includes('Nhà Phố');
+    heroImageUrl = p.image || '';
+    galleryImages = p.gallery ? [...p.gallery] : [];
+    if (heroImageUrl) {
+      document.getElementById('projHeroImg').src = heroImageUrl;
+      document.getElementById('projHeroImg').style.display = '';
+      document.getElementById('projHeroEmpty').style.display = 'none';
+    } else {
+      document.getElementById('projHeroImg').style.display = 'none';
+      document.getElementById('projHeroEmpty').style.display = '';
+    }
+  } else {
+    document.getElementById('projectModalTitle').textContent = '🏗️ Thêm Dự Án Mới';
+    ['projName','projInvestor','projLocation','projPrice','projDesc','projCommission','projArea','projAmenities','projNotes','projVideo'].forEach(id2 => {
+      const el = document.getElementById(id2); if (el) el.value = '';
+    });
+    document.getElementById('projUnits').value = '';
+    document.getElementById('projStatus').value = 'Đang mở bán';
+    document.getElementById('projFeatured').checked = false;
+    ['typeShophouse','typeCondo','typeLand','typeHouse'].forEach(id2 => {
+      document.getElementById(id2).checked = false;
+    });
+    heroImageUrl = '';
+    galleryImages = [];
+    document.getElementById('projHeroImg').style.display = 'none';
+    document.getElementById('projHeroEmpty').style.display = '';
+  }
+  renderGalleryPreview();
+  openModal('projectModal');
+}
+
+function editProject(id) { openProjectModal(id); }
+
+function closeProjectModal() { closeModal('projectModal'); }
+
+function switchTab(tab) {
+  activeTab = tab;
+  ['info','media','sales'].forEach(t => {
+    document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === tab ? '' : 'none';
+    const btn = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1) + 'Btn');
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
+}
+
+function saveProject(mode) {
+  const name = document.getElementById('projName').value.trim();
+  const location = document.getElementById('projLocation').value.trim();
+  if (!name) { switchTab('info'); showToast('Vui lòng nhập tên dự án!', 'error'); return; }
+  if (!location) { switchTab('info'); showToast('Vui lòng nhập địa điểm!', 'error'); return; }
+
+  const types = [];
+  if (document.getElementById('typeShophouse').checked) types.push('Shophouse');
+  if (document.getElementById('typeCondo').checked) types.push('Căn Hộ');
+  if (document.getElementById('typeLand').checked) types.push('Đất Nền');
+  if (document.getElementById('typeHouse').checked) types.push('Nhà Phố');
+
+  const data = {
+    name, location,
+    investor: document.getElementById('projInvestor').value.trim(),
+    status: document.getElementById('projStatus').value,
+    price: document.getElementById('projPrice').value.trim(),
+    units: parseInt(document.getElementById('projUnits').value) || 0,
+    types,
+    desc: document.getElementById('projDesc').value.trim(),
+    image: heroImageUrl,
+    gallery: [...galleryImages],
+    video: document.getElementById('projVideo').value.trim(),
+    commission: parseFloat(document.getElementById('projCommission').value) || 0,
+    area: document.getElementById('projArea').value.trim(),
+    amenities: document.getElementById('projAmenities').value.trim(),
+    featured: document.getElementById('projFeatured').checked,
+    notes: document.getElementById('projNotes').value.trim(),
+    updated: new Date().toISOString().split('T')[0]
+  };
+
+  if (editingProjectId) {
+    const idx = projects.findIndex(p => p.id === editingProjectId);
+    projects[idx] = { ...projects[idx], ...data };
+    showToast('✅ Đã cập nhật dự án!', 'success');
+  } else {
+    projects.unshift({ id: Date.now(), ...data });
+    showToast('✅ Đã thêm dự án mới!', 'success');
+  }
+  saveProjects(); renderStats(); filterProjects(); closeProjectModal();
+}
+
+// ── Image Handlers ────────────────────────────────────────────
+function handleHeroUpload(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    heroImageUrl = e.target.result;
+    document.getElementById('projHeroImg').src = heroImageUrl;
+    document.getElementById('projHeroImg').style.display = '';
+    document.getElementById('projHeroEmpty').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleGalleryUpload(input) {
+  Array.from(input.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      galleryImages.push(e.target.result);
+      renderGalleryPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderGalleryPreview() {
+  document.getElementById('galleryPreview').innerHTML = galleryImages.map((url, i) => `
+    <div class="gallery-thumb">
+      <img src="${url}" alt="gallery-${i}" />
+      <div class="gallery-thumb-remove" onclick="removeGalleryImg(${i})">✕</div>
+    </div>`).join('');
+}
+
+function removeGalleryImg(i) {
+  galleryImages.splice(i, 1);
+  renderGalleryPreview();
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+function formatDate(d) {
+  if (!d) return '–';
+  try { return new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}); } catch { return d; }
+}
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
