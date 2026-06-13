@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản Lý Leads – An Cựu Galleria Admin</title>
+  <link rel="stylesheet" href="../admin.css" />
+  <style>
+    .leads-filter-bar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .leads-filter-bar .search-input-wrap { flex: 1; min-width: 220px; }
+    .date-range-wrap { display: flex; align-items: center; gap: 6px; }
+    .date-input {
+      padding: 9px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 0.85rem;
+      outline: none;
+      cursor: pointer;
+      width: 138px;
+    }
+    .date-input:focus { border-color: var(--gold); }
+    .date-input::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
+    .date-sep { color: var(--text-3); font-size: 0.8rem; }
+    .status-select-inline {
+      padding: 5px 24px 5px 10px;
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aaa'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 8px;
+      transition: all 0.2s;
+    }
+    .status-select-inline.s-new      { background-color:rgba(59,130,246,0.12); color:#60a5fa; border-color:rgba(59,130,246,0.3); }
+    .status-select-inline.s-called   { background-color:rgba(168,85,247,0.12); color:#c084fc; border-color:rgba(168,85,247,0.3); }
+    .status-select-inline.s-interested{ background-color:rgba(245,158,11,0.12); color:#fbbf24; border-color:rgba(245,158,11,0.3); }
+    .status-select-inline.s-closed   { background-color:rgba(34,197,94,0.12);  color:#4ade80; border-color:rgba(34,197,94,0.3); }
+    .status-select-inline.s-cancelled { background-color:rgba(239,68,68,0.12);  color:#f87171; border-color:rgba(239,68,68,0.3); }
+    .source-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:99px; font-size:0.7rem; font-weight:600; }
+    .source-website  { background:rgba(59,130,246,0.1);  color:#60a5fa; }
+    .source-facebook { background:rgba(99,102,241,0.12); color:#a5b4fc; }
+    .source-zalo     { background:rgba(6,182,212,0.12);  color:#67e8f9; }
+    .source-tiktok   { background:rgba(236,72,153,0.12); color:#f9a8d4; }
+    .source-referral { background:rgba(212,175,55,0.12); color:var(--gold); }
+    .phone-link { color:var(--gold); font-weight:600; display:inline-flex; align-items:center; gap:4px; text-decoration:none; transition:color 0.2s; }
+    .phone-link:hover { color:var(--gold-light); text-decoration:underline; }
+    .action-group { display:flex; align-items:center; gap:4px; }
+    .act-btn { width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:0.9rem; cursor:pointer; border:1px solid var(--border); background:var(--bg-card); color:var(--text-2); transition:all 0.18s; text-decoration:none; }
+    .act-btn:hover { background:var(--bg-elevated); color:var(--text); border-color:var(--gold); }
+    .act-btn.danger:hover { background:rgba(239,68,68,0.15); color:#f87171; border-color:rgba(239,68,68,0.4); }
+    .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .detail-field label { display:block; font-size:0.72rem; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px; }
+    .detail-field p { font-size:0.9rem; color:var(--text); font-weight:500; }
+    .detail-divider { border:none; border-top:1px solid var(--border); margin:16px 0; }
+    .quick-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .quick-btn { display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:var(--radius-sm); font-size:0.85rem; font-weight:600; cursor:pointer; border:1px solid transparent; text-decoration:none; transition:all 0.2s; }
+    .quick-call  { background:rgba(34,197,94,0.12);  color:#4ade80; border-color:rgba(34,197,94,0.3); }
+    .quick-call:hover  { background:rgba(34,197,94,0.22); }
+    .quick-zalo  { background:rgba(6,182,212,0.12);  color:#67e8f9; border-color:rgba(6,182,212,0.3); }
+    .quick-zalo:hover  { background:rgba(6,182,212,0.22); }
+    .quick-email { background:rgba(59,130,246,0.12); color:#60a5fa; border-color:rgba(59,130,246,0.3); }
+    .quick-email:hover { background:rgba(59,130,246,0.22); }
+    .form-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .leads-card { background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+    .leads-card-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+    @media(max-width:700px) { .stats-grid { grid-template-columns:1fr 1fr !important; } }
+    @media(max-width:580px) { .form-grid-2,.detail-grid { grid-template-columns:1fr; } .date-range-wrap { flex-wrap:wrap; } }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="admin-sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">A</div>
+        <div class="sidebar-logo-text">
+          <strong>An Cựu Galleria</strong>
+          <span>Admin Panel</span>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Tổng Quan</div>
+      <a href="../index.html" class="admin-nav-link"><span class="nav-icon">🏠</span> Dashboard</a>
+      <div class="nav-section-title">Quản Lý</div>
+      <a href="properties.html" class="admin-nav-link"><span class="nav-icon">🏘️</span> Bất Động Sản</a>
+      <a href="projects.html" class="admin-nav-link"><span class="nav-icon">🏗️</span> Dự Án</a>
+      <a href="leads.html" class="admin-nav-link active"><span class="nav-icon">👥</span> Leads &amp; Liên Hệ <span class="nav-badge" id="sidebar-lead-count" style="display:none">0</span></a>
+      <a href="blog.html" class="admin-nav-link"><span class="nav-icon">📝</span> Blog &amp; Tin Tức</a>
+      <a href="gallery.html" class="admin-nav-link"><span class="nav-icon">🖼️</span> Thư Viện Ảnh</a>
+      <div class="nav-section-title">Hệ Thống</div>
+      <a href="settings.html" class="admin-nav-link"><span class="nav-icon">⚙️</span> Cài Đặt</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="user-avatar">A</div>
+        <div class="sidebar-user-info">
+          <strong id="user-email-display">Admin</strong>
+          <span>Quản trị viên</span>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-full btn-sm" onclick="Auth.logout()">🚪 Đăng Xuất</button>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div>
+          <div class="topbar-title">Quản Lý Leads &amp; Liên Hệ</div>
+          <div class="topbar-breadcrumb">Admin / Leads</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">📥 Export CSV</button>
+        <button class="btn btn-gold btn-sm" onclick="openModal('add-lead-modal')">➕ Thêm Lead</button>
+      </div>
+    </header>
+
+    <div class="admin-content">
+
+      <!-- STATS -->
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+        <div class="stat-card">
+          <div class="stat-icon gold">👥</div>
+          <div><div class="stat-value" id="stat-total">0</div><div class="stat-label">Tổng Leads</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue">🆕</div>
+          <div><div class="stat-value" id="stat-today">0</div><div class="stat-label">Mới Hôm Nay</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(245,158,11,0.12);">⏳</div>
+          <div><div class="stat-value" id="stat-processing">0</div><div class="stat-label">Đang Xử Lý</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">✅</div>
+          <div><div class="stat-value" id="stat-done">0</div><div class="stat-label">Đã Chốt</div></div>
+        </div>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="leads-filter-bar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="search-input" placeholder="Tìm theo tên, SĐT, email..." oninput="applyFilters()" />
+        </div>
+        <select class="filter-select" id="filter-status" onchange="applyFilters()">
+          <option value="">Tất cả trạng thái</option>
+          <option value="new">🔵 Mới</option>
+          <option value="called">🟣 Đã gọi</option>
+          <option value="interested">🟡 Quan tâm</option>
+          <option value="closed">🟢 Đã chốt</option>
+          <option value="cancelled">🔴 Hủy</option>
+        </select>
+        <select class="filter-select" id="filter-source" onchange="applyFilters()">
+          <option value="">Tất cả nguồn</option>
+          <option value="website">🌐 Website</option>
+          <option value="facebook">📘 Facebook</option>
+          <option value="zalo">💬 Zalo</option>
+          <option value="tiktok">🎵 TikTok</option>
+          <option value="referral">🤝 Giới thiệu</option>
+        </select>
+        <div class="date-range-wrap">
+          <input type="date" class="date-input" id="date-from" onchange="applyFilters()" />
+          <span class="date-sep">→</span>
+          <input type="date" class="date-input" id="date-to" onchange="applyFilters()" />
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="clearFilters()">✕ Xóa lọc</button>
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">📥 CSV</button>
+      </div>
+
+      <!-- LEADS TABLE -->
+      <div class="leads-card">
+        <div class="leads-card-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-weight:700;font-size:0.95rem;">Danh Sách Leads</span>
+            <span style="font-size:0.8rem;color:var(--text-3);" id="showing-count">Đang tải...</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="loadLeads()">🔄 Tải lại</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width:40px">#</th>
+                <th>Tên Khách Hàng</th>
+                <th>Số Điện Thoại</th>
+                <th>Nhu Cầu</th>
+                <th>Nguồn</th>
+                <th>Trang</th>
+                <th>Thời Gian</th>
+                <th>Trạng Thái</th>
+                <th style="width:110px">Hành Động</th>
+              </tr>
+            </thead>
+            <tbody id="leads-tbody">
+              <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-3);">⏳ Đang tải...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ═══ LEAD DETAIL MODAL ═══ -->
+<div class="modal-overlay" id="detail-modal" onclick="if(event.target===this)closeModal('detail-modal')">
+  <div class="modal-box modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">👤 Chi Tiết Lead</div>
+      <button class="modal-close-btn" onclick="closeModal('detail-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="quick-actions" style="margin-bottom:20px;">
+        <a href="#" class="quick-btn quick-call" id="detail-call-btn">📞 Gọi Ngay</a>
+        <a href="#" class="quick-btn quick-zalo" id="detail-zalo-btn" target="_blank">💬 Zalo</a>
+        <a href="#" class="quick-btn quick-email" id="detail-email-btn">📧 Email</a>
+      </div>
+      <hr class="detail-divider" />
+      <div class="detail-grid" id="detail-grid"></div>
+      <hr class="detail-divider" />
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px;">
+        <label style="font-size:0.8rem;font-weight:700;color:var(--text-2);text-transform:uppercase;white-space:nowrap;">Cập nhật trạng thái:</label>
+        <select class="filter-select" id="detail-status-select" onchange="updateLeadStatus()" style="min-width:160px;">
+          <option value="new">🔵 Mới</option>
+          <option value="called">🟣 Đã gọi</option>
+          <option value="interested">🟡 Quan tâm</option>
+          <option value="closed">🟢 Đã chốt</option>
+          <option value="cancelled">🔴 Hủy</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">📝 Ghi Chú</label>
+        <textarea class="form-control" id="detail-note" rows="4" placeholder="Nhập ghi chú về khách hàng này..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('detail-modal')">Đóng</button>
+      <button class="btn btn-gold" onclick="saveLeadNote()">💾 Lưu Ghi Chú</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADD LEAD MODAL ═══ -->
+<div class="modal-overlay" id="add-lead-modal" onclick="if(event.target===this)closeModal('add-lead-modal')">
+  <div class="modal-box modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">➕ Thêm Lead Thủ Công</div>
+      <button class="modal-close-btn" onclick="closeModal('add-lead-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Tên Khách Hàng *</label><input type="text" class="form-control" id="add-name" placeholder="Nguyễn Văn A" /></div>
+        <div class="form-group"><label class="form-label">Số Điện Thoại *</label><input type="tel" class="form-control" id="add-phone" placeholder="0907xxxxxx" /></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-control" id="add-email" placeholder="email@example.com" /></div>
+        <div class="form-group"><label class="form-label">Ngân Sách</label><input type="text" class="form-control" id="add-budget" placeholder="VD: 3 – 5 tỷ" /></div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Nhu Cầu</label>
+          <select class="form-control" id="add-need">
+            <option value="Mua">Mua BĐS</option><option value="Thuê">Thuê BĐS</option><option value="Đầu tư">Đầu tư</option><option value="Tư vấn">Tư vấn</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Nguồn</label>
+          <select class="form-control" id="add-source">
+            <option value="website">Website</option><option value="facebook">Facebook</option><option value="zalo">Zalo</option><option value="tiktok">TikTok</option><option value="referral">Giới thiệu</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group"><label class="form-label">Trang Nguồn</label><input type="text" class="form-control" id="add-page" placeholder="VD: Shophouse An Cựu" /></div>
+        <div class="form-group"><label class="form-label">Trạng Thái</label>
+          <select class="form-control" id="add-status">
+            <option value="new">Mới</option><option value="called">Đã gọi</option><option value="interested">Quan tâm</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Ghi Chú</label><textarea class="form-control" id="add-note" rows="3" placeholder="Ghi chú..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-lead-modal')">Hủy</button>
+      <button class="btn btn-gold" onclick="addLeadManual()">✅ Thêm Lead</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONFIRM MODAL ═══ -->
+<div class="modal-overlay" id="confirm-modal" onclick="if(event.target===this)closeModal('confirm-modal')">
+  <div class="modal-box modal-sm">
+    <div class="modal-header"><div class="modal-title">⚠️ Xác Nhận</div><button class="modal-close-btn" onclick="closeModal('confirm-modal')">✕</button></div>
+    <div class="modal-body"><p id="confirm-msg" style="color:var(--text-2);font-size:0.95rem;"></p></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('confirm-modal')">Hủy</button>
+      <button class="btn btn-danger" id="confirm-ok">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/core.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (!Auth.requireAuth()) return;
+  initPage();
+});
+
+var allLeads = [], filteredLeads = [], currentLeadId = null;
+
+function initPage() {
+  var email = Auth.getEmail();
+  var el = document.getElementById('user-email-display');
+  if (el) el.textContent = email.split('@')[0];
+  var av = document.getElementById('user-avatar');
+  if (av) av.textContent = email[0].toUpperCase();
+  setActiveNav();
+  loadLeads();
+}
+
+function loadLeads() {
+  allLeads = CMS.getLeads();
+  if (!allLeads.length) {
+    allLeads = getDemoLeads();
+    var cms = CMS.get(); cms.leads = allLeads; CMS.set(cms);
+  }
+  filteredLeads = allLeads.slice();
+  updateStats(); renderTable(); updateSidebarBadge();
+}
+
+function getDemoLeads() {
+  var n = new Date();
+  return [
+    { id:1001, name:'Trần Thị Mai', phone:'0907123456', email:'mai.tran@gmail.com', need:'Mua', budget:'3–5 tỷ', source:'facebook', page:'Shophouse An Cựu', note:'Khách quan tâm shophouse 3 tầng, muốn xem cuối tuần.', status:'interested', created_at:n.toISOString() },
+    { id:1002, name:'Nguyễn Văn Hùng', phone:'0912345678', email:'hung.nv@gmail.com', need:'Đầu tư', budget:'5–10 tỷ', source:'zalo', page:'Đất nền An Vân Dương', note:'', status:'new', created_at:new Date(n-86400000).toISOString() },
+    { id:1003, name:'Lê Thị Hoa', phone:'0938765432', email:'hoa.le@outlook.com', need:'Thuê', budget:'15–20 triệu/tháng', source:'website', page:'Căn hộ An Cựu Galleria', note:'Cần căn 2PN view sông, ưu tiên tầng cao.', status:'called', created_at:new Date(n-172800000).toISOString() },
+    { id:1004, name:'Phạm Minh Đức', phone:'0909876543', email:'duc.pm@company.vn', need:'Mua', budget:'2–3 tỷ', source:'tiktok', page:'Căn hộ An Cựu Galleria', note:'Đã tư vấn qua điện thoại, hẹn xem thực địa thứ 7.', status:'closed', created_at:new Date(n-259200000).toISOString() },
+    { id:1005, name:'Võ Thị Thanh', phone:'0976543210', email:'', need:'Tư vấn', budget:'Chưa xác định', source:'referral', page:'Trang chủ', note:'', status:'cancelled', created_at:new Date(n-345600000).toISOString() },
+    { id:1006, name:'Hoàng Văn Tú', phone:'0905111222', email:'tu.hv@gmail.com', need:'Mua', budget:'4–6 tỷ', source:'facebook', page:'Shophouse An Cựu', note:'Khách VIP, gọi lại ngay.', status:'new', created_at:n.toISOString() }
+  ];
+}
+
+function updateStats() {
+  var today = new Date().toDateString(), tc=0, pr=0, dn=0;
+  allLeads.forEach(function(l) {
+    if (new Date(l.created_at).toDateString()===today) tc++;
+    if (['new','called','interested'].indexOf(l.status)>-1) pr++;
+    if (l.status==='closed') dn++;
+  });
+  document.getElementById('stat-total').textContent = allLeads.length;
+  document.getElementById('stat-today').textContent = tc;
+  document.getElementById('stat-processing').textContent = pr;
+  document.getElementById('stat-done').textContent = dn;
+}
+
+function updateSidebarBadge() {
+  var b = document.getElementById('sidebar-lead-count');
+  var n = allLeads.filter(function(l){return l.status==='new';}).length;
+  if (b) { b.textContent = n; b.style.display = n>0?'':'none'; }
+}
+
+function applyFilters() {
+  var s = document.getElementById('search-input').value.toLowerCase();
+  var st = document.getElementById('filter-status').value;
+  var sr = document.getElementById('filter-source').value;
+  var df = document.getElementById('date-from').value;
+  var dt = document.getElementById('date-to').value;
+  filteredLeads = allLeads.filter(function(l) {
+    if (s && (l.name+' '+l.phone+' '+l.email).toLowerCase().indexOf(s)===-1) return false;
+    if (st && l.status!==st) return false;
+    if (sr && l.source!==sr) return false;
+    if (df) { var d=new Date(l.created_at); d.setHours(0,0,0,0); var f=new Date(df); f.setHours(0,0,0,0); if(d<f) return false; }
+    if (dt) { var d2=new Date(l.created_at); d2.setHours(23,59,59,999); var t=new Date(dt); t.setHours(23,59,59,999); if(d2>t) return false; }
+    return true;
+  });
+  renderTable();
+}
+
+function clearFilters() {
+  ['search-input'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('filter-status').value='';
+  document.getElementById('filter-source').value='';
+  document.getElementById('date-from').value='';
+  document.getElementById('date-to').value='';
+  filteredLeads = allLeads.slice();
+  renderTable();
+}
+
+function renderTable() {
+  var tbody = document.getElementById('leads-tbody');
+  var ce = document.getElementById('showing-count');
+  if (ce) ce.textContent = filteredLeads.length+' / '+allLeads.length+' leads';
+  if (!filteredLeads.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:60px 24px;"><div style="font-size:2.5rem;margin-bottom:12px;opacity:0.4;">📭</div><div style="font-weight:700;font-size:1rem;margin-bottom:6px;color:var(--text);">Không có leads nào</div><div style="font-size:0.875rem;color:var(--text-2);margin-bottom:16px;">Thử thay đổi bộ lọc hoặc thêm lead mới.</div><button class="btn btn-gold btn-sm" onclick="openModal(\'add-lead-modal\')">➕ Thêm Lead</button></td></tr>';
+    return;
+  }
+  var sm={website:'🌐 Website',facebook:'📘 Facebook',zalo:'💬 Zalo',tiktok:'🎵 TikTok',referral:'🤝 Giới thiệu'};
+  var sc={website:'source-website',facebook:'source-facebook',zalo:'source-zalo',tiktok:'source-tiktok',referral:'source-referral'};
+  var html='';
+  filteredLeads.forEach(function(l,i) {
+    var cls = sClass(l.status);
+    html += '<tr id="row-'+l.id+'">';
+    html += '<td style="color:var(--text-3);font-size:0.8rem;">'+(i+1)+'</td>';
+    html += '<td><div style="font-weight:600;color:var(--text);">'+esc(l.name)+'</div>'+(l.email?'<div style="font-size:0.75rem;color:var(--text-3);">'+esc(l.email)+'</div>':'')+'</td>';
+    html += '<td><a href="tel:'+esc(l.phone)+'" class="phone-link">📞 '+esc(l.phone)+'</a></td>';
+    html += '<td style="color:var(--text-2);">'+esc(l.need||'')+'</td>';
+    html += '<td><span class="source-badge '+(sc[l.source]||'source-website')+'">'+esc(sm[l.source]||l.source||'')+'</span></td>';
+    html += '<td style="font-size:0.8rem;color:var(--text-3);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+esc(l.page||'')+'">'+esc(l.page||'')+'</td>';
+    html += '<td style="font-size:0.8rem;color:var(--text-3);white-space:nowrap;">'+fmtTime(l.created_at)+'</td>';
+    html += '<td><select class="status-select-inline '+cls+'" data-id="'+l.id+'" onchange="changeStatus('+l.id+',this.value,this)">'
+      +'<option value="new"'+(l.status==='new'?' selected':'')+'>🔵 Mới</option>'
+      +'<option value="called"'+(l.status==='called'?' selected':'')+'>🟣 Đã gọi</option>'
+      +'<option value="interested"'+(l.status==='interested'?' selected':'')+'>🟡 Quan tâm</option>'
+      +'<option value="closed"'+(l.status==='closed'?' selected':'')+'>🟢 Đã chốt</option>'
+      +'<option value="cancelled"'+(l.status==='cancelled'?' selected':'')+'>🔴 Hủy</option>'
+      +'</select></td>';
+    html += '<td><div class="action-group">'
+      +'<button class="act-btn" title="Xem chi tiết" onclick="viewDetail('+l.id+')">👁️</button>'
+      +'<button class="act-btn" title="Ghi chú" onclick="viewDetail('+l.id+',true)">📝</button>'
+      +'<button class="act-btn danger" title="Xóa" onclick="deleteLead('+l.id+')">🗑️</button>'
+      +'</div></td></tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+function esc(s) { if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function sClass(s) { return {new:'s-new',called:'s-called',interested:'s-interested',closed:'s-closed',cancelled:'s-cancelled'}[s]||'s-new'; }
+function fmtTime(iso) {
+  if (!iso) return '';
+  var d=new Date(iso), now=new Date(), diff=(now-d)/1000;
+  if (diff<60) return 'Vừa xong';
+  if (diff<3600) return Math.floor(diff/60)+' phút trước';
+  if (diff<86400) return Math.floor(diff/3600)+' giờ trước';
+  if (diff<604800) return Math.floor(diff/86400)+' ngày trước';
+  return d.toLocaleDateString('vi-VN');
+}
+
+function changeStatus(id, ns, sel) {
+  var leads = CMS.getLeads(), idx = leads.findIndex(function(l){return l.id===id;});
+  if (idx!==-1) {
+    leads[idx].status = ns;
+    var cms=CMS.get(); cms.leads=leads; CMS.set(cms);
+    allLeads = leads;
+    filteredLeads = filteredLeads.map(function(l){return l.id===id?Object.assign({},l,{status:ns}):l;});
+    if (sel) sel.className = 'status-select-inline '+sClass(ns);
+    updateStats(); updateSidebarBadge();
+    showToast('Đã cập nhật trạng thái!', 'success');
+  }
+}
+
+function viewDetail(id, focusNote) {
+  var lead = allLeads.find(function(l){return l.id===id;});
+  if (!lead) return;
+  currentLeadId = id;
+  document.getElementById('detail-call-btn').href = 'tel:'+lead.phone;
+  document.getElementById('detail-zalo-btn').href = 'https://zalo.me/'+(lead.phone||'').replace(/^0/,'84');
+  document.getElementById('detail-email-btn').href = lead.email ? 'mailto:'+lead.email : '#';
+  var sm={website:'🌐 Website',facebook:'📘 Facebook',zalo:'💬 Zalo',tiktok:'🎵 TikTok',referral:'🤝 Giới thiệu'};
+  document.getElementById('detail-grid').innerHTML =
+    '<div class="detail-field"><label>Họ &amp; Tên</label><p>'+esc(lead.name||'—')+'</p></div>'+
+    '<div class="detail-field"><label>Số Điện Thoại</label><p><a href="tel:'+esc(lead.phone)+'" class="phone-link">📞 '+esc(lead.phone||'—')+'</a></p></div>'+
+    '<div class="detail-field"><label>Email</label><p>'+esc(lead.email||'Chưa có')+'</p></div>'+
+    '<div class="detail-field"><label>Ngân Sách</label><p>'+esc(lead.budget||'Chưa xác định')+'</p></div>'+
+    '<div class="detail-field"><label>Nhu Cầu</label><p>'+esc(lead.need||'—')+'</p></div>'+
+    '<div class="detail-field"><label>Nguồn Tiếp Cận</label><p>'+esc(sm[lead.source]||lead.source||'—')+'</p></div>'+
+    '<div class="detail-field"><label>Trang Nguồn</label><p>'+esc(lead.page||'—')+'</p></div>'+
+    '<div class="detail-field"><label>Thời Gian Liên Hệ</label><p>'+(lead.created_at?new Date(lead.created_at).toLocaleString('vi-VN'):'—')+'</p></div>';
+  document.getElementById('detail-status-select').value = lead.status||'new';
+  document.getElementById('detail-note').value = lead.note||'';
+  openModal('detail-modal');
+  if (focusNote) setTimeout(function(){document.getElementById('detail-note').focus();},200);
+}
+
+function updateLeadStatus() {
+  if (!currentLeadId) return;
+  var ns = document.getElementById('detail-status-select').value;
+  changeStatus(currentLeadId, ns, null);
+  var s = document.querySelector('select[data-id="'+currentLeadId+'"]');
+  if (s) { s.value=ns; s.className='status-select-inline '+sClass(ns); }
+}
+
+function saveLeadNote() {
+  if (!currentLeadId) return;
+  var note = document.getElementById('detail-note').value;
+  var ns = document.getElementById('detail-status-select').value;
+  var leads = CMS.getLeads(), idx = leads.findIndex(function(l){return l.id===currentLeadId;});
+  if (idx!==-1) {
+    leads[idx].note = note; leads[idx].status = ns;
+    var cms=CMS.get(); cms.leads=leads; CMS.set(cms);
+    allLeads = leads;
+    filteredLeads = filteredLeads.map(function(l){return l.id===currentLeadId?Object.assign({},l,{note:note,status:ns}):l;});
+    updateStats(); updateSidebarBadge();
+    showToast('Đã lưu ghi chú!', 'success');
+    closeModal('detail-modal'); renderTable();
+  }
+}
+
+function deleteLead(id) {
+  var lead = allLeads.find(function(l){return l.id===id;});
+  if (!lead) return;
+  confirmAction('Xóa lead "'+lead.name+'"? Hành động này không thể hoàn tác.', function() {
+    var leads = CMS.getLeads().filter(function(l){return l.id!==id;});
+    var cms=CMS.get(); cms.leads=leads; CMS.set(cms);
+    allLeads=leads; filteredLeads=filteredLeads.filter(function(l){return l.id!==id;});
+    updateStats(); updateSidebarBadge(); showToast('Đã xóa lead!','success'); renderTable();
+  });
+}
+
+function addLeadManual() {
+  var name = document.getElementById('add-name').value.trim();
+  var phone = document.getElementById('add-phone').value.trim();
+  if (!name||!phone) { showToast('Vui lòng nhập Tên và Số điện thoại!','error'); return; }
+  var nl = {
+    id: Date.now(), name: name, phone: phone,
+    email: document.getElementById('add-email').value.trim(),
+    budget: document.getElementById('add-budget').value.trim(),
+    need: document.getElementById('add-need').value,
+    source: document.getElementById('add-source').value,
+    page: document.getElementById('add-page').value.trim(),
+    note: document.getElementById('add-note').value.trim(),
+    status: document.getElementById('add-status').value,
+    created_at: new Date().toISOString()
+  };
+  var leads=CMS.getLeads(); leads.unshift(nl);
+  var cms=CMS.get(); cms.leads=leads; CMS.set(cms);
+  allLeads=leads; filteredLeads=[nl].concat(filteredLeads);
+  ['add-name','add-phone','add-email','add-budget','add-page','add-note'].forEach(function(id){document.getElementById(id).value='';});
+  updateStats(); updateSidebarBadge(); renderTable();
+  showToast('Đã thêm lead "'+name+'"!','success');
+  closeModal('add-lead-modal');
+}
+
+function exportCSV() {
+  var data = filteredLeads.length ? filteredLeads : allLeads;
+  if (!data.length) { showToast('Không có dữ liệu để xuất!','warning'); return; }
+  var sm={website:'Website',facebook:'Facebook',zalo:'Zalo',tiktok:'TikTok',referral:'Giới thiệu'};
+  var stm={new:'Mới',called:'Đã gọi',interested:'Quan tâm',closed:'Đã chốt',cancelled:'Hủy'};
+  var hdr = ['#','Tên Khách Hàng','Số ĐT','Email','Nhu Cầu','Ngân Sách','Nguồn','Trang','Trạng Thái','Ghi Chú','Thời Gian'];
+  var rows = data.map(function(l,i){
+    return [i+1,'"'+(l.name||'').replace(/"/g,'""')+'"',l.phone||'',l.email||'',
+      '"'+(l.need||'').replace(/"/g,'""')+'"','"'+(l.budget||'').replace(/"/g,'""')+'"',
+      sm[l.source]||l.source||'','"'+(l.page||'').replace(/"/g,'""')+'"',
+      stm[l.status]||l.status||'','"'+(l.note||'').replace(/"/g,'""')+'"',
+      l.created_at?new Date(l.created_at).toLocaleString('vi-VN'):''].join(',');
+  });
+  var csv = '\uFEFF'+[hdr.join(',')].concat(rows).join('\n');
+  var blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href=url; a.download='leads-ancuu-'+new Date().toISOString().slice(0,10)+'.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast('Đã xuất '+data.length+' leads thành công!','success');
+}
+</script>
+</body>
+</html>
