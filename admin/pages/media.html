@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản Lý Media – An Cựu Galleria Admin</title>
+  <link rel="stylesheet" href="../admin.css" />
+  <script src="../js/core.js" defer></script>
+  <style>
+    /* ── Upload Zone ── */
+    .media-upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-lg);
+      padding: 48px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      position: relative;
+      background: var(--bg-surface);
+      margin-bottom: 24px;
+    }
+    .media-upload-zone:hover,
+    .media-upload-zone.drag-over {
+      border-color: var(--gold);
+      background: var(--gold-glow);
+      transform: none;
+    }
+    .media-upload-zone input[type="file"] {
+      position: absolute; inset: 0;
+      opacity: 0; cursor: pointer;
+      width: 100%; height: 100%;
+    }
+    .upload-zone-icon-large {
+      font-size: 3.5rem;
+      margin-bottom: 16px;
+      display: block;
+      filter: grayscale(0.3);
+    }
+    .upload-zone-title {
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--text); margin-bottom: 8px;
+    }
+    .upload-zone-desc {
+      font-size: 0.875rem; color: var(--text-2);
+      margin-bottom: 16px;
+    }
+    .upload-zone-specs {
+      display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+    }
+    .upload-spec-badge {
+      padding: 4px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      font-size: 0.72rem; font-weight: 600;
+      color: var(--text-2);
+    }
+
+    /* ── Upload Progress ── */
+    .upload-progress-list {
+      display: flex; flex-direction: column; gap: 8px;
+      margin-bottom: 20px;
+    }
+    .upload-progress-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+    }
+    .upload-prog-thumb {
+      width: 40px; height: 40px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      flex-shrink: 0;
+    }
+    .upload-prog-info { min-width: 0; }
+    .upload-prog-name {
+      font-size: 0.82rem; font-weight: 600;
+      color: var(--text); white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .upload-prog-bar-wrap {
+      height: 4px; background: var(--bg-card);
+      border-radius: 99px; overflow: hidden;
+      margin-top: 4px;
+    }
+    .upload-prog-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      border-radius: 99px;
+      transition: width 0.3s;
+    }
+    .upload-prog-status {
+      font-size: 0.72rem; color: var(--text-3);
+      margin-top: 2px;
+    }
+    .upload-prog-pct {
+      font-size: 0.8rem; font-weight: 700;
+      color: var(--gold); white-space: nowrap;
+    }
+
+    /* ── View Toggle ── */
+    .view-toggle {
+      display: flex;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .view-toggle-btn {
+      padding: 8px 14px;
+      background: transparent;
+      border: none;
+      color: var(--text-3);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .view-toggle-btn.active {
+      background: var(--gold-glow);
+      color: var(--gold);
+    }
+
+    /* ── Media Grid ── */
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .media-grid.list-view {
+      grid-template-columns: 1fr;
+    }
+    .media-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: all 0.2s;
+      cursor: pointer;
+      position: relative;
+      group: true;
+    }
+    .media-card:hover {
+      border-color: var(--border-gold);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+    .media-card-thumb {
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      position: relative;
+      background: var(--bg-card);
+    }
+    .media-card-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .media-card:hover .media-card-thumb img { transform: scale(1.05); }
+    .media-card-thumb-video {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem;
+      background: var(--bg-elevated);
+    }
+    .media-card-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .media-card:hover .media-card-overlay { opacity: 1; }
+    .media-overlay-btn {
+      width: 38px; height: 38px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 8px;
+      color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.15s;
+    }
+    .media-overlay-btn:hover { background: var(--gold); border-color: var(--gold); color: #1C2139; }
+    .media-card-info {
+      padding: 10px 12px;
+    }
+    .media-card-name {
+      font-size: 0.8rem; font-weight: 600;
+      color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+    .media-card-meta {
+      display: flex; gap: 8px;
+      font-size: 0.7rem; color: var(--text-3);
+    }
+
+    /* List view item */
+    .media-grid.list-view .media-card {
+      display: flex; align-items: center; gap: 14px;
+    }
+    .media-grid.list-view .media-card-thumb {
+      width: 80px; height: 60px;
+      aspect-ratio: unset;
+      flex-shrink: 0;
+      border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    }
+    .media-grid.list-view .media-card-info {
+      flex: 1; padding: 12px 0;
+    }
+    .media-grid.list-view .media-card-overlay {
+      border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    }
+    .media-grid.list-view .media-card-actions-right {
+      display: flex; gap: 6px; padding: 0 12px;
+    }
+
+    /* ── Lightbox ── */
+    .lightbox-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 3000;
+      background: rgba(0,0,0,0.92);
+      backdrop-filter: blur(8px);
+      align-items: center; justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .lightbox-overlay.open { display: flex; }
+    .lightbox-img {
+      max-width: 90vw;
+      max-height: 80vh;
+      border-radius: var(--radius);
+      box-shadow: 0 20px 80px rgba(0,0,0,0.6);
+      object-fit: contain;
+    }
+    .lightbox-info {
+      text-align: center;
+    }
+    .lightbox-name {
+      font-size: 0.9rem; font-weight: 600; color: var(--text);
+      margin-bottom: 4px;
+    }
+    .lightbox-meta {
+      font-size: 0.8rem; color: var(--text-3);
+    }
+    .lightbox-close {
+      position: fixed;
+      top: 20px; right: 24px;
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      color: #fff; font-size: 1.2rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .lightbox-close:hover { background: var(--danger); border-color: var(--danger); }
+    .lightbox-nav {
+      position: fixed;
+      top: 50%; transform: translateY(-50%);
+      width: 44px; height: 44px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      color: #fff; font-size: 1.4rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .lightbox-nav:hover { background: var(--gold); border-color: var(--gold); color: #1C2139; }
+    .lightbox-prev { left: 20px; }
+    .lightbox-next { right: 20px; }
+    .lightbox-actions {
+      display: flex; gap: 10px;
+    }
+
+    /* ── Media Select Modal ── */
+    .media-select-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .media-select-item {
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .media-select-item:hover { border-color: var(--gold); }
+    .media-select-item.selected { border-color: var(--gold); }
+    .media-select-item.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 6px; right: 6px;
+      width: 22px; height: 22px;
+      background: var(--gold);
+      color: #1C2139;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700;
+    }
+    .media-select-item img {
+      width: 100%; aspect-ratio: 4/3; object-fit: cover;
+    }
+    .media-select-name {
+      padding: 6px 8px;
+      font-size: 0.7rem; color: var(--text-2);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+  </style>
+</head>
+<body>
+
+<script>
+  (function() {
+    var token = localStorage.getItem('acg_admin_token');
+    var exp = parseInt(localStorage.getItem('acg_admin_exp') || '0');
+    if (!token || Date.now() >= exp) window.location.href = '/admin/index.html';
+  })();
+</script>
+
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">A</div>
+        <div class="sidebar-logo-text">
+          <strong>An Cựu Galleria</strong>
+          <span>Admin Panel</span>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Tổng Quan</div>
+      <a href="/admin/index.html" class="admin-nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+      <div class="nav-section-title">Nội Dung</div>
+      <a href="properties.html" class="admin-nav-link"><span class="nav-icon">🏠</span> Bất Động Sản</a>
+      <a href="projects.html" class="admin-nav-link"><span class="nav-icon">🏗️</span> Dự Án</a>
+      <a href="blog.html" class="admin-nav-link"><span class="nav-icon">📝</span> Blog</a>
+      <a href="media.html" class="admin-nav-link active"><span class="nav-icon">🖼️</span> Media</a>
+      <div class="nav-section-title">Kinh Doanh</div>
+      <a href="leads.html" class="admin-nav-link">
+        <span class="nav-icon">👥</span> Khách Hàng
+        <span class="nav-badge" id="sidebarLeadCount">0</span>
+      </a>
+      <a href="agents.html" class="admin-nav-link"><span class="nav-icon">🤝</span> Đại Lý</a>
+      <div class="nav-section-title">Hệ Thống</div>
+      <a href="settings.html" class="admin-nav-link"><span class="nav-icon">⚙️</span> Cài Đặt</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="sidebarAvatar">A</div>
+        <div class="sidebar-user-info">
+          <strong id="sidebarEmail">Admin</strong>
+          <span>Quản trị viên</span>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-full btn-sm" onclick="Auth.logout()">🚪 Đăng Xuất</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" onclick="document.getElementById('adminSidebar').classList.toggle('open')">☰</button>
+        <div>
+          <div class="topbar-title">Quản Lý Media</div>
+          <div class="topbar-breadcrumb">Admin / Media</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-gold btn-sm" onclick="document.getElementById('mainUploadInput').click()">
+          ⬆️ Tải Lên
+        </button>
+      </div>
+    </header>
+
+    <div class="admin-content">
+
+      <!-- STATS -->
+      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+        <div class="stat-card">
+          <div class="stat-icon gold">🗂</div>
+          <div><div class="stat-value" id="statTotalMedia">5</div><div class="stat-label">Tổng files</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue">🖼</div>
+          <div><div class="stat-value" id="statImages">5</div><div class="stat-label">Ảnh</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">🎥</div>
+          <div><div class="stat-value" id="statVideos">0</div><div class="stat-label">Video</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">💾</div>
+          <div><div class="stat-value" id="statStorage">3.4 MB</div><div class="stat-label">Dung lượng</div></div>
+        </div>
+      </div>
+
+      <!-- A. UPLOAD ZONE -->
+      <div class="media-upload-zone" id="mainUploadZone">
+        <input type="file" id="mainUploadInput" accept="image/*,video/mp4" multiple onchange="handleFileSelect(this.files)" />
+        <span class="upload-zone-icon-large">☁️</span>
+        <div class="upload-zone-title">Kéo thả ảnh / video vào đây</div>
+        <div class="upload-zone-desc">hoặc <strong style="color:var(--gold);">click để chọn file</strong> từ máy tính</div>
+        <div class="upload-zone-specs">
+          <span class="upload-spec-badge">JPG</span>
+          <span class="upload-spec-badge">PNG</span>
+          <span class="upload-spec-badge">WebP</span>
+          <span class="upload-spec-badge">GIF</span>
+          <span class="upload-spec-badge">MP4</span>
+          <span class="upload-spec-badge">Tối đa 10MB / file</span>
+          <span class="upload-spec-badge">Nhiều file cùng lúc</span>
+        </div>
+      </div>
+
+      <!-- PROGRESS LIST -->
+      <div class="upload-progress-list" id="uploadProgressList"></div>
+
+      <!-- B. FILTER BAR -->
+      <div class="filter-bar" style="justify-content:space-between;margin-bottom:20px;">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <div class="search-input-wrap" style="min-width:180px;">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="mediaSearch" placeholder="Tìm tên file..." oninput="filterMedia()" />
+          </div>
+          <select class="filter-select" id="mediaTypeFilter" onchange="filterMedia()">
+            <option value="">Tất cả</option>
+            <option value="image">🖼 Ảnh</option>
+            <option value="video">🎥 Video</option>
+          </select>
+          <select class="filter-select" id="mediaDateFilter" onchange="filterMedia()">
+            <option value="">Tất cả thời gian</option>
+            <option value="today">Hôm nay</option>
+            <option value="week">7 ngày qua</option>
+            <option value="month">Tháng này</option>
+          </select>
+        </div>
+        <div class="view-toggle">
+          <button class="view-toggle-btn active" id="gridViewBtn" onclick="setView('grid')" title="Grid view">⊞</button>
+          <button class="view-toggle-btn" id="listViewBtn" onclick="setView('list')" title="List view">≡</button>
+        </div>
+      </div>
+
+      <!-- C. MEDIA GRID -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🖼 Thư Viện Media</div>
+          <span class="badge badge-gold" id="mediaCountBadge">5 files</span>
+        </div>
+        <div class="card-body">
+          <div class="media-grid" id="mediaGrid"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── LIGHTBOX ─────────────────────────────────────────────── -->
+<div class="lightbox-overlay" id="lightboxOverlay" onclick="if(event.target===this)closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1)">‹</button>
+  <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1)">›</button>
+  <img class="lightbox-img" id="lightboxImg" src="" alt="" />
+  <div class="lightbox-info">
+    <div class="lightbox-name" id="lightboxName"></div>
+    <div class="lightbox-meta" id="lightboxMeta"></div>
+  </div>
+  <div class="lightbox-actions">
+    <button class="btn btn-outline btn-sm" onclick="copyMediaUrl(currentLightboxItem)">📋 Copy URL</button>
+    <button class="btn btn-danger btn-sm" onclick="deleteMedia(currentLightboxItem);closeLightbox()">🗑️ Xóa</button>
+  </div>
+</div>
+
+<!-- ── CONFIRM MODAL ──────────────────────────────────────────── -->
+<div class="modal-overlay" id="confirm-modal" style="display:none;" onclick="if(event.target===this)closeModal('confirm-modal')">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">⚠️ Xác nhận</div>
+      <button class="modal-close-btn" onclick="closeModal('confirm-modal')">✕</button>
+    </div>
+    <div class="modal-body"><p id="confirm-msg" style="color:var(--text-2);line-height:1.7;"></p></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('confirm-modal')">Hủy</button>
+      <button class="btn btn-danger btn-sm" id="confirm-ok">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MEDIA SELECT MODAL (called externally) ─────────────────── -->
+<div class="modal-overlay" id="mediaSelectModal" style="display:none;" onclick="if(event.target===this)closeModal('mediaSelectModal')">
+  <div class="modal-box modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">🖼 Chọn ảnh từ Media Library</div>
+      <button class="modal-close-btn" onclick="closeModal('mediaSelectModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="search-input-wrap" style="margin-bottom:16px;">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="mediaSelectSearch" placeholder="Tìm ảnh..." oninput="renderMediaSelectGrid()" />
+      </div>
+      <div class="media-select-grid" id="mediaSelectGrid"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('mediaSelectModal')">Hủy</button>
+      <button class="btn btn-gold btn-sm" onclick="confirmMediaSelect()">✅ Chọn ảnh này</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Mock Media Data ────────────────────────────────────────────
+const INITIAL_MEDIA = [
+  { id:1, name:'agent.png',     url:'/images/agent.png',     type:'image', size:641676,  date:'2025-06-01', width:800,  height:600 },
+  { id:2, name:'hero-bg.png',   url:'/images/hero-bg.png',   type:'image', size:910269,  date:'2025-05-28', width:1920, height:1080 },
+  { id:3, name:'shophouse.png', url:'/images/shophouse.png', type:'image', size:930792,  date:'2025-05-20', width:1200, height:800 },
+  { id:4, name:'apartment.png', url:'/images/apartment.png', type:'image', size:997984,  date:'2025-05-15', width:1200, height:800 },
+  { id:5, name:'land.png',      url:'/images/land.png',      type:'image', size:1070282, date:'2025-05-10', width:1200, height:800 }
+];
+
+let mediaItems = [];
+let currentView = 'grid';
+let currentLightboxItem = null;
+let lightboxIndex = 0;
+let filteredMedia = [];
+let mediaSelectCallback = null;
+let selectedMediaItem = null;
+
+// ── Init ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const cms = CMS.get();
+  mediaItems = cms.media && cms.media.length ? cms.media : INITIAL_MEDIA.map(m => ({...m}));
+  saveMedia();
+
+  const email = Auth.getEmail();
+  document.getElementById('sidebarEmail').textContent = email.split('@')[0];
+  document.getElementById('sidebarAvatar').textContent = email[0].toUpperCase();
+  const leads = CMS.getLeads();
+  const newLeads = leads.filter(l => l.status === 'new').length;
+  if (newLeads > 0) document.getElementById('sidebarLeadCount').textContent = newLeads;
+  else document.getElementById('sidebarLeadCount').style.display = 'none';
+
+  setActiveNav();
+  setupDragDrop();
+  renderStats();
+  filterMedia();
+});
+
+function saveMedia() {
+  const cms = CMS.get(); cms.media = mediaItems; CMS.set(cms);
+}
+
+// ── Stats ──────────────────────────────────────────────────────
+function renderStats() {
+  const total = mediaItems.length;
+  const images = mediaItems.filter(m => m.type === 'image').length;
+  const videos = mediaItems.filter(m => m.type === 'video').length;
+  const totalBytes = mediaItems.reduce((s, m) => s + (m.size || 0), 0);
+  document.getElementById('statTotalMedia').textContent = total;
+  document.getElementById('statImages').textContent = images;
+  document.getElementById('statVideos').textContent = videos;
+  document.getElementById('statStorage').textContent = formatBytes(totalBytes);
+}
+
+// ── Drag & Drop ───────────────────────────────────────────────
+function setupDragDrop() {
+  const zone = document.getElementById('mainUploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    handleFileSelect(e.dataTransfer.files);
+  });
+}
+
+// ── File Upload ────────────────────────────────────────────────
+function handleFileSelect(files) {
+  Array.from(files).forEach(file => {
+    if (file.size > 10 * 1024 * 1024) {
+      showToast(file.name + ' vượt quá 10MB!', 'error'); return;
+    }
+    if (!file.type.match(/^image\/|^video\/mp4/)) {
+      showToast(file.name + ': định dạng không hỗ trợ.', 'error'); return;
+    }
+    uploadFile(file);
+  });
+}
+
+function uploadFile(file) {
+  const id = 'prog_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+  const isImage = file.type.startsWith('image/');
+
+  // Create progress item
+  const list = document.getElementById('uploadProgressList');
+  const item = document.createElement('div');
+  item.className = 'upload-progress-item';
+  item.id = id;
+  item.innerHTML = `
+    <img class="upload-prog-thumb" id="${id}_thumb" src="" alt="" />
+    <div class="upload-prog-info">
+      <div class="upload-prog-name">${escHtml(file.name)}</div>
+      <div class="upload-prog-bar-wrap"><div class="upload-prog-bar" id="${id}_bar" style="width:0%"></div></div>
+      <div class="upload-prog-status" id="${id}_status">Đang chuẩn bị...</div>
+    </div>
+    <div class="upload-prog-pct" id="${id}_pct">0%</div>
+  `;
+  list.prepend(item);
+
+  // Preview thumb if image
+  if (isImage) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById(id + '_thumb').src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    document.getElementById(id + '_thumb').innerHTML = '🎥';
+  }
+
+  // Simulate progress
+  let pct = 0;
+  const interval = setInterval(() => {
+    pct += Math.random() * 25;
+    if (pct >= 100) { pct = 100; clearInterval(interval); }
+    document.getElementById(id + '_bar').style.width = pct + '%';
+    document.getElementById(id + '_pct').textContent = Math.round(pct) + '%';
+    if (pct === 100) {
+      document.getElementById(id + '_status').textContent = 'Hoàn thành ✓';
+      document.getElementById(id + '_status').style.color = 'var(--success)';
+      // Actually read file and add to media
+      const reader2 = new FileReader();
+      reader2.onload = e2 => {
+        const newItem = {
+          id: Date.now(),
+          name: file.name,
+          url: e2.target.result,
+          type: isImage ? 'image' : 'video',
+          size: file.size,
+          date: new Date().toISOString().split('T')[0]
+        };
+        mediaItems.unshift(newItem);
+        saveMedia();
+        renderStats();
+        filterMedia();
+        showToast('✅ Đã tải lên: ' + file.name, 'success');
+        // Remove progress item after 2s
+        setTimeout(() => { const el = document.getElementById(id); if (el) el.remove(); }, 2000);
+      };
+      reader2.readAsDataURL(file);
+    }
+  }, 150);
+}
+
+// ── Filter ────────────────────────────────────────────────────
+function filterMedia() {
+  const q = (document.getElementById('mediaSearch').value || '').toLowerCase();
+  const type = document.getElementById('mediaTypeFilter').value;
+  const dateF = document.getElementById('mediaDateFilter').value;
+  const now = new Date();
+
+  filteredMedia = mediaItems.filter(m => {
+    if (q && !m.name.toLowerCase().includes(q)) return false;
+    if (type && m.type !== type) return false;
+    if (dateF) {
+      const d = new Date(m.date);
+      if (dateF === 'today') {
+        if (d.toDateString() !== now.toDateString()) return false;
+      } else if (dateF === 'week') {
+        const week = new Date(now); week.setDate(week.getDate() - 7);
+        if (d < week) return false;
+      } else if (dateF === 'month') {
+        if (d.getMonth() !== now.getMonth() || d.getFullYear() !== now.getFullYear()) return false;
+      }
+    }
+    return true;
+  });
+  renderMediaGrid(filteredMedia);
+  document.getElementById('mediaCountBadge').textContent = filteredMedia.length + ' files';
+}
+
+// ── View Toggle ───────────────────────────────────────────────
+function setView(v) {
+  currentView = v;
+  document.getElementById('gridViewBtn').classList.toggle('active', v === 'grid');
+  document.getElementById('listViewBtn').classList.toggle('active', v === 'list');
+  filterMedia();
+}
+
+// ── Render Media Grid ─────────────────────────────────────────
+function renderMediaGrid(data) {
+  const grid = document.getElementById('mediaGrid');
+  grid.className = 'media-grid' + (currentView === 'list' ? ' list-view' : '');
+
+  if (!data.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🖼️</div><div class="empty-title">Chưa có media</div><div class="empty-desc">Tải lên ảnh hoặc video để bắt đầu.</div></div>';
+    return;
+  }
+
+  grid.innerHTML = data.map((m, idx) => `
+    <div class="media-card" onclick="openLightbox(${m.id})">
+      <div class="media-card-thumb">
+        ${m.type === 'image'
+          ? `<img src="${m.url}" alt="${escHtml(m.name)}" loading="lazy" onerror="this.parentElement.innerHTML='<div style=\\"display:flex;align-items:center;justify-content:center;height:100%;font-size:2rem;color:var(--text-3)\\">🖼</div>'" />`
+          : `<div class="media-card-thumb-video">🎥</div>`
+        }
+        <div class="media-card-overlay">
+          <div class="media-overlay-btn" onclick="event.stopPropagation();openLightbox(${m.id})" title="Xem">🔍</div>
+          <div class="media-overlay-btn" onclick="event.stopPropagation();copyMediaUrl(${m.id})" title="Copy URL">📋</div>
+          <div class="media-overlay-btn" onclick="event.stopPropagation();deleteMedia(${m.id})" title="Xóa" style="background:rgba(239,68,68,0.3);">🗑️</div>
+        </div>
+      </div>
+      <div class="media-card-info">
+        <div class="media-card-name">${escHtml(m.name)}</div>
+        <div class="media-card-meta">
+          <span>${formatBytes(m.size)}</span>
+          <span>·</span>
+          <span>${formatDate(m.date)}</span>
+        </div>
+      </div>
+      ${currentView === 'list' ? `
+      <div class="media-card-actions-right">
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="event.stopPropagation();copyMediaUrl(${m.id})" title="Copy URL">📋</button>
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="event.stopPropagation();deleteMedia(${m.id})" title="Xóa" style="color:var(--danger);">🗑️</button>
+      </div>` : ''}
+    </div>`).join('');
+}
+
+// ── Delete ────────────────────────────────────────────────────
+function deleteMedia(id) {
+  const m = mediaItems.find(x => x.id === id);
+  if (!m) return;
+  confirmAction('Xóa "' + m.name + '"? Hành động này không thể hoàn tác.', () => {
+    mediaItems = mediaItems.filter(x => x.id !== id);
+    saveMedia(); renderStats(); filterMedia();
+    showToast('Đã xóa: ' + m.name, 'success');
+  });
+}
+
+// ── Copy URL ──────────────────────────────────────────────────
+function copyMediaUrl(id) {
+  const m = mediaItems.find(x => x.id === id);
+  if (!m) return;
+  navigator.clipboard.writeText(m.url).then(() => {
+    showToast('📋 Đã copy URL: ' + m.name, 'success');
+  }).catch(() => {
+    showToast('URL: ' + m.url, 'info');
+  });
+}
+
+// ── Lightbox ──────────────────────────────────────────────────
+function openLightbox(id) {
+  const m = mediaItems.find(x => x.id === id);
+  if (!m || m.type !== 'image') return;
+  currentLightboxItem = id;
+  lightboxIndex = filteredMedia.findIndex(x => x.id === id);
+  setLightboxItem(m);
+  document.getElementById('lightboxOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function setLightboxItem(m) {
+  document.getElementById('lightboxImg').src = m.url;
+  document.getElementById('lightboxName').textContent = m.name;
+  document.getElementById('lightboxMeta').textContent = formatBytes(m.size) + ' · ' + formatDate(m.date);
+  currentLightboxItem = m.id;
+}
+
+function closeLightbox() {
+  document.getElementById('lightboxOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function lightboxNav(dir) {
+  const imageItems = filteredMedia.filter(m => m.type === 'image');
+  let idx = imageItems.findIndex(x => x.id === currentLightboxItem);
+  idx = (idx + dir + imageItems.length) % imageItems.length;
+  setLightboxItem(imageItems[idx]);
+}
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightboxOverlay').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft') lightboxNav(-1);
+  if (e.key === 'ArrowRight') lightboxNav(1);
+  if (e.key === 'Escape') closeLightbox();
+});
+
+// ── Media Select Modal (for use from other pages) ─────────────
+function openMediaSelect(callback) {
+  mediaSelectCallback = callback;
+  selectedMediaItem = null;
+  renderMediaSelectGrid();
+  openModal('mediaSelectModal');
+}
+
+function renderMediaSelectGrid() {
+  const q = (document.getElementById('mediaSelectSearch').value || '').toLowerCase();
+  const items = mediaItems.filter(m => m.type === 'image' && (!q || m.name.toLowerCase().includes(q)));
+  document.getElementById('mediaSelectGrid').innerHTML = items.map(m => `
+    <div class="media-select-item ${selectedMediaItem === m.id ? 'selected' : ''}" onclick="selectMediaItem(${m.id})">
+      <img src="${m.url}" alt="${escHtml(m.name)}" onerror="this.style.display='none'" />
+      <div class="media-select-name">${escHtml(m.name)}</div>
+    </div>`).join('') || '<p style="color:var(--text-3);text-align:center;padding:20px;">Không tìm thấy ảnh nào.</p>';
+}
+
+function selectMediaItem(id) {
+  selectedMediaItem = id;
+  renderMediaSelectGrid();
+}
+
+function confirmMediaSelect() {
+  if (!selectedMediaItem) { showToast('Vui lòng chọn một ảnh.', 'warning'); return; }
+  const m = mediaItems.find(x => x.id === selectedMediaItem);
+  if (m && mediaSelectCallback) mediaSelectCallback(m.url, m.name);
+  closeModal('mediaSelectModal');
+}
+
+// Expose for other pages
+window.openMediaSelect = openMediaSelect;
+
+// ── Helpers ───────────────────────────────────────────────────
+function formatBytes(bytes) {
+  if (!bytes) return '–';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+function formatDate(d) {
+  if (!d) return '–';
+  try { return new Date(d).toLocaleDateString('vi-VN', {day:'2-digit',month:'2-digit',year:'numeric'}); } catch { return d; }
+}
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
