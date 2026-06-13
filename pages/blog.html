@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog Kiến Thức Bất Động Sản Huế | An Cựu Galleria</title>
+  <meta name="description" content="Blog kiến thức bất động sản Huế – Kinh nghiệm đầu tư, pháp lý nhà đất, phân tích dự án, thị trường Huế cập nhật mỗi ngày. Hotline: 0907.272.001" />
+  <meta name="keywords" content="blog bất động sản Huế, kinh nghiệm mua nhà Huế, pháp lý nhà đất, thị trường BDS Huế" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://ancuugalleriahue.vn/pages/blog.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Blog Kiến Thức Bất Động Sản Huế | An Cựu Galleria" />
+  <meta property="og:description" content="Blog kiến thức đầu tư, pháp lý và thị trường bất động sản Huế cập nhật mỗi ngày." />
+  <meta property="og:url" content="https://ancuugalleriahue.vn/pages/blog.html" />
+  <meta property="og:site_name" content="An Cựu Galleria Huế" />
+  <meta property="og:locale" content="vi_VN" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Blog Kiến Thức Bất Động Sản Huế | An Cựu Galleria" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="../styles.css" />
+
+  <!-- JSON-LD BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Trang Chủ",
+        "item": "https://ancuugalleriahue.vn/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://ancuugalleriahue.vn/pages/blog.html"
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    /* ── Blog Page Specific Styles ── */
+    .blog-hero {
+      padding: 140px 0 60px;
+      background: linear-gradient(135deg, #0d1124 0%, #1C2139 60%, #252B49 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .blog-hero::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(212,175,55,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .blog-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -100px; left: -100px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(212,175,55,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Category Filter Tabs */
+    .cat-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 48px;
+    }
+    .cat-tab {
+      padding: 10px 22px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1.5px solid var(--border-subtle);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition);
+      font-family: 'Inter', sans-serif;
+    }
+    .cat-tab:hover { border-color: var(--gold); color: var(--gold); background: rgba(212,175,55,0.06); }
+    .cat-tab.active {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: #1C2139;
+      border-color: transparent;
+      box-shadow: 0 4px 16px rgba(212,175,55,0.3);
+    }
+
+    /* Featured Blog Card */
+    .blog-featured {
+      position: relative;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 48px;
+      display: grid;
+      grid-template-columns: 1fr;
+      min-height: 400px;
+      transition: all var(--transition);
+    }
+    @media (min-width: 768px) { .blog-featured { grid-template-columns: 1.2fr 1fr; } }
+    .blog-featured:hover { border-color: rgba(212,175,55,0.3); box-shadow: 0 24px 64px rgba(0,0,0,0.4), var(--shadow-gold); }
+    .blog-featured-img-wrap { position: relative; overflow: hidden; min-height: 300px; }
+    .blog-featured-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease; }
+    .blog-featured:hover .blog-featured-img { transform: scale(1.05); }
+    .blog-featured-badge {
+      position: absolute; top: 20px; left: 20px;
+      padding: 6px 16px; border-radius: 50px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: #1C2139; font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+    }
+    .blog-featured-body {
+      padding: 36px 32px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .blog-featured-cat {
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--gold); margin-bottom: 14px;
+    }
+    .blog-featured-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.4rem, 2.5vw, 2rem);
+      font-weight: 800; color: var(--text);
+      line-height: 1.3; margin-bottom: 16px;
+    }
+    .blog-featured-excerpt {
+      font-size: 0.95rem; color: var(--text-secondary);
+      line-height: 1.75; margin-bottom: 24px;
+    }
+    .blog-featured-meta {
+      display: flex; align-items: center; gap: 16px;
+      font-size: 0.8rem; color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+    .blog-featured-meta span { display: flex; align-items: center; gap: 5px; }
+
+    /* Blog Grid */
+    .blog-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+    @media (min-width: 1024px) { .blog-layout { grid-template-columns: 1fr 320px; } }
+
+    .blog-grid-3 {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 28px;
+      margin-bottom: 40px;
+    }
+    @media (min-width: 640px) { .blog-grid-3 { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .blog-grid-3 { grid-template-columns: repeat(3, 1fr); } }
+
+    .blog-card-img-wrap { position: relative; overflow: hidden; height: 200px; }
+    .blog-card-img-inner {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .blog-card:hover .blog-card-img-inner { transform: scale(1.07); }
+    .blog-card-badge-abs {
+      position: absolute; top: 14px; left: 14px;
+      padding: 4px 12px; border-radius: 50px;
+      font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .badge-cat-invest { background: rgba(212,175,55,0.2); color: var(--gold-light); border: 1px solid rgba(212,175,55,0.3); }
+    .badge-cat-legal { background: rgba(59,130,246,0.2); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); }
+    .badge-cat-market { background: rgba(34,197,94,0.2); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+    .badge-cat-project { background: rgba(168,85,247,0.2); color: #c4b5fd; border: 1px solid rgba(168,85,247,0.3); }
+
+    .blog-card-body { padding: 22px; flex: 1; display: flex; flex-direction: column; }
+    .blog-card-cat { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 8px; display: block; }
+    .blog-card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; font-weight: 700; color: var(--text);
+      margin-bottom: 10px; line-height: 1.4;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      flex: 1;
+    }
+    .blog-card-excerpt {
+      font-size: 0.84rem; color: var(--text-secondary);
+      line-height: 1.6; margin-bottom: 16px;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .blog-card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid var(--border-subtle); padding-top: 14px; margin-top: auto;
+    }
+    .blog-card-meta { font-size: 0.74rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 2px; }
+    .blog-read-more {
+      font-size: 0.8rem; font-weight: 600; color: var(--gold);
+      display: flex; align-items: center; gap: 4px;
+      transition: gap var(--transition);
+      text-decoration: none;
+    }
+    .blog-read-more:hover { gap: 8px; }
+
+    /* Sidebar */
+    .sidebar { display: flex; flex-direction: column; gap: 28px; }
+    .sidebar-widget {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+    .sidebar-widget-title {
+      font-size: 0.78rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--gold); margin-bottom: 18px;
+      padding-bottom: 14px; border-bottom: 1px solid var(--border-subtle);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .sidebar-widget-title::before {
+      content: ''; width: 18px; height: 2px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+    }
+
+    /* Search Widget */
+    .sidebar-search { display: flex; gap: 8px; }
+    .sidebar-search-input {
+      flex: 1; padding: 10px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text); font-size: 0.88rem;
+      outline: none; font-family: 'Inter', sans-serif;
+      transition: border-color var(--transition);
+    }
+    .sidebar-search-input:focus { border-color: var(--gold); }
+    .sidebar-search-btn {
+      width: 40px; height: 40px; border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; color: #1C2139; cursor: pointer; flex-shrink: 0;
+      border: none; transition: all var(--transition);
+    }
+    .sidebar-search-btn:hover { transform: scale(1.05); }
+
+    /* Popular Posts */
+    .popular-post {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: all var(--transition);
+      text-decoration: none;
+    }
+    .popular-post:last-child { border-bottom: none; padding-bottom: 0; }
+    .popular-post:hover .popular-post-title { color: var(--gold); }
+    .popular-post-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; font-weight: 800;
+      color: rgba(212,175,55,0.2); line-height: 1;
+      min-width: 28px; text-align: center;
+    }
+    .popular-post-title {
+      font-size: 0.84rem; font-weight: 600;
+      color: var(--text); line-height: 1.4;
+      transition: color var(--transition);
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .popular-post-date { font-size: 0.72rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* Category List */
+    .cat-list-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0; border-bottom: 1px solid var(--border-subtle);
+      text-decoration: none; transition: color var(--transition);
+      font-size: 0.88rem; color: var(--text-secondary);
+    }
+    .cat-list-item:last-child { border-bottom: none; }
+    .cat-list-item:hover { color: var(--gold); }
+    .cat-list-count {
+      font-size: 0.72rem; font-weight: 700;
+      background: rgba(212,175,55,0.12);
+      color: var(--gold); padding: 2px 9px;
+      border-radius: 50px; border: 1px solid rgba(212,175,55,0.2);
+    }
+
+    /* Sidebar Lead Form */
+    .sidebar-lead-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem; font-weight: 800;
+      color: var(--text); margin-bottom: 6px; line-height: 1.3;
+    }
+    .sidebar-lead-sub { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 18px; }
+
+    /* Pagination */
+    .pagination {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; flex-wrap: wrap;
+    }
+    .page-btn {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.88rem; font-weight: 600;
+      background: var(--glass-light);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary); cursor: pointer;
+      transition: all var(--transition);
+      text-decoration: none;
+    }
+    .page-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(212,175,55,0.08); }
+    .page-btn.active {
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      color: #1C2139; border-color: transparent;
+      box-shadow: 0 4px 14px rgba(212,175,55,0.3);
+    }
+    .page-btn-arrow { width: 44px; height: 40px; font-size: 1rem; }
+
+    /* Highlighted lead form in sidebar */
+    .sidebar-lead-widget {
+      background: linear-gradient(135deg, rgba(212,175,55,0.08) 0%, rgba(37,43,73,0.9) 100%);
+      border: 1px solid rgba(212,175,55,0.2);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     HEADER / NAVIGATION
+═══════════════════════════════════════ -->
+<header class="navbar" id="navbar" role="banner">
+  <div class="container">
+    <nav class="nav-inner" aria-label="Main navigation">
+      <!-- Logo -->
+      <a href="../index.html" class="nav-logo" aria-label="An Cựu Galleria Huế - Trang chủ">
+        <div class="nav-logo-icon">A</div>
+        <div class="nav-logo-text">
+          <span class="nav-logo-title">An Cựu Galleria</span>
+          <span class="nav-logo-sub">Bất Động Sản Huế</span>
+        </div>
+      </a>
+
+      <!-- Desktop Menu -->
+      <ul class="nav-menu hidden-mobile" role="list">
+        <li><a href="../index.html" class="nav-link">Trang Chủ</a></li>
+        <li><a href="bat-dong-san.html" class="nav-link">Bất Động Sản</a></li>
+        <li><a href="du-an.html" class="nav-link">Dự Án</a></li>
+        <li><a href="gia-dat-hue.html" class="nav-link">Giá Đất Huế</a></li>
+        <li><a href="blog.html" class="nav-link active" aria-current="page">Blog</a></li>
+        <li><a href="gioi-thieu.html" class="nav-link">Giới Thiệu</a></li>
+        <li><a href="lien-he.html" class="nav-link">Liên Hệ</a></li>
+      </ul>
+
+      <!-- CTA -->
+      <div class="nav-cta hidden-mobile">
+        <a href="tel:0907272001" class="nav-phone" aria-label="Gọi ngay 0907.272.001">
+          📞 0907.272.001
+        </a>
+        <a href="#sidebar-lead" class="btn btn-primary btn-sm">Tư Vấn Miễn Phí</a>
+      </div>
+
+      <!-- Hamburger -->
+      <button class="hamburger hidden-desktop" id="hamburger" aria-label="Mở menu" aria-expanded="false" aria-controls="mobile-menu">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<!-- Mobile Menu -->
+<nav class="mobile-menu" id="mobile-menu" aria-label="Mobile navigation">
+  <button class="modal-close" id="close-mobile" aria-label="Đóng menu" style="position:absolute;top:20px;right:20px;">✕</button>
+  <div class="nav-logo" style="margin-bottom:24px;">
+    <div class="nav-logo-icon">A</div>
+    <div class="nav-logo-text">
+      <span class="nav-logo-title">An Cựu Galleria</span>
+      <span class="nav-logo-sub">Bất Động Sản Huế</span>
+    </div>
+  </div>
+  <a href="../index.html" class="nav-link">🏠 Trang Chủ</a>
+  <a href="bat-dong-san.html" class="nav-link">🏢 Bất Động Sản</a>
+  <a href="du-an.html" class="nav-link">🏗️ Dự Án</a>
+  <a href="gia-dat-hue.html" class="nav-link">📊 Giá Đất Huế</a>
+  <a href="blog.html" class="nav-link active">📝 Blog</a>
+  <a href="gioi-thieu.html" class="nav-link">👤 Giới Thiệu</a>
+  <a href="lien-he.html" class="nav-link">📞 Liên Hệ</a>
+  <div style="padding:20px 16px;margin-top:auto;">
+    <a href="tel:0907272001" class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:12px;">
+      📞 Gọi Ngay: 0907.272.001
+    </a>
+    <a href="https://zalo.me/0907272001" class="btn btn-secondary" style="width:100%;justify-content:center;">
+      💬 Zalo Tư Vấn
+    </a>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     BLOG HERO / PAGE HEADER
+═══════════════════════════════════════ -->
+<main id="main-content">
+<section class="blog-hero" aria-labelledby="blog-heading">
+  <div class="container" style="position:relative;z-index:2;">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb" style="margin-bottom:24px;">
+      <a href="../index.html">Trang chủ</a>
+      <span class="breadcrumb-sep">›</span>
+      <span class="breadcrumb-current">Blog</span>
+    </nav>
+
+    <div class="animate-fadeInUp">
+      <span class="section-label">Kiến Thức BDS</span>
+      <h1 id="blog-heading" style="font-size:clamp(2rem,4.5vw,3.2rem);font-weight:800;color:var(--text);margin-bottom:16px;line-height:1.15;">
+        Blog Kiến Thức <span class="gold-text">Bất Động Sản Huế</span>
+      </h1>
+      <p style="font-size:1.05rem;color:var(--text-secondary);max-width:580px;line-height:1.7;">
+        Cập nhật kiến thức đầu tư, pháp lý, phân tích thị trường và kinh nghiệm thực tế từ chuyên gia BDS Huế hàng đầu.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     CATEGORY FILTER TABS
+═══════════════════════════════════════ -->
+<section style="background:var(--bg-surface);border-bottom:1px solid var(--border-subtle);padding:20px 0;">
+  <div class="container">
+    <div class="cat-tabs" role="tablist" aria-label="Lọc theo danh mục">
+      <button class="cat-tab active" role="tab" aria-selected="true" onclick="filterCat(this,'all')">Tất cả</button>
+      <button class="cat-tab" role="tab" aria-selected="false" onclick="filterCat(this,'invest')">💰 Kiến Thức Đầu Tư</button>
+      <button class="cat-tab" role="tab" aria-selected="false" onclick="filterCat(this,'legal')">⚖️ Pháp Lý</button>
+      <button class="cat-tab" role="tab" aria-selected="false" onclick="filterCat(this,'project')">🏗️ Phân Tích Dự Án</button>
+      <button class="cat-tab" role="tab" aria-selected="false" onclick="filterCat(this,'market')">📊 Thị Trường Huế</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     BLOG CONTENT AREA
+═══════════════════════════════════════ -->
+<section class="section-padding">
+  <div class="container">
+    <!-- FEATURED ARTICLE -->
+    <article class="blog-featured animate-fadeInUp" itemscope itemtype="https://schema.org/BlogPosting">
+      <div class="blog-featured-img-wrap">
+        <img
+          src="../images/land.png"
+          alt="Thị trường bất động sản Huế Q1/2025 – Giá đất tăng mạnh"
+          class="blog-featured-img"
+          itemprop="image"
+          loading="eager"
+          fetchpriority="high"
+        />
+        <div class="blog-featured-badge">✦ Bài Nổi Bật</div>
+      </div>
+      <div class="blog-featured-body">
+        <div class="blog-featured-cat" itemprop="articleSection">📊 Thị Trường Huế</div>
+        <h2 class="blog-featured-title" itemprop="headline">
+          Giá Đất Huế Tăng Mạnh Q1/2025 – Cơ Hội Vàng Cho Nhà Đầu Tư
+        </h2>
+        <p class="blog-featured-excerpt" itemprop="description">
+          Thị trường bất động sản Huế ghi nhận mức tăng trưởng ấn tượng trong quý 1 năm 2025, đặc biệt tại các khu vực trọng điểm như An Cựu, An Vân Dương và Thủy Dương. Giá đất nền tại An Cựu tăng trung bình 18-25% so với cùng kỳ năm 2024, trong khi shophouse mặt tiền tiếp tục là phân khúc được săn đón nhất. Bài phân tích chuyên sâu của chuyên gia An Cựu Galleria.
+        </p>
+        <div class="blog-featured-meta">
+          <span>📅 <time itemprop="datePublished" datetime="2025-03-20">20 tháng 3, 2025</time></span>
+          <span>⏱️ 8 phút đọc</span>
+          <span>👁️ 2.4K lượt xem</span>
+        </div>
+        <a href="#" class="btn btn-primary" style="align-self:flex-start;" itemprop="url">
+          Đọc Bài Viết →
+        </a>
+      </div>
+    </article>
+
+    <!-- BLOG LAYOUT: Main + Sidebar -->
+    <div class="blog-layout">
+      <!-- MAIN CONTENT -->
+      <div>
+        <!-- Blog Grid 6 articles -->
+        <div class="blog-grid-3">
+
+          <!-- Article 1: Đất nền -->
+          <article class="blog-card" data-cat="invest" itemscope itemtype="https://schema.org/BlogPosting">
+            <div class="blog-card-img-wrap">
+              <img src="../images/land.png" alt="5 Lưu Ý Khi Mua Đất Nền Tại Huế" class="blog-card-img-inner" itemprop="image" loading="lazy" />
+              <span class="blog-card-badge-abs badge-cat-invest">💰 Đầu Tư</span>
+            </div>
+            <div class="blog-card-body">
+              <span class="blog-card-cat" itemprop="articleSection">Kiến Thức Đầu Tư</span>
+              <h3 class="blog-card-title" itemprop="headline">
+                <a href="#" style="color:inherit;text-decoration:none;">5 Lưu Ý Khi Mua Đất Nền Tại Huế</a>
+              </h3>
+              <p class="blog-card-excerpt" itemprop="description">
+                Những kinh nghiệm thực tiễn không thể bỏ qua khi đầu tư đất nền tại Huế: kiểm tra pháp lý, quy hoạch, hạ tầng và tiềm năng tăng giá khu vực.
+              </p>
+              <div class="blog-card-footer">
+                <div class="blog-card-meta">
+                  <span>📅 <time datetime="2025-03-15">15/03/2025</time></span>
+                  <span>⏱️ 6 phút đọc</span>
+                </div>
+                <a href="#" class="blog-read-more" itemprop="url">Đọc thêm →</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Article 2: Phân tích dự án -->
+          <article class="blog-card" data-cat="project" itemscope itemtype="https://schema.org/BlogPosting">
+            <div class="blog-card-img-wrap">
+              <img src="../images/apartment.png" alt="Phân Tích Dự Án An Cựu Galleria 2025" class="blog-card-img-inner" itemprop="image" loading="lazy" />
+              <span class="blog-card-badge-abs badge-cat-project">🏗️ Dự Án</span>
+            </div>
+            <div class="blog-card-body">
+              <span class="blog-card-cat" itemprop="articleSection">Phân Tích Dự Án</span>
+              <h3 class="blog-card-title" itemprop="headline">
+                <a href="#" style="color:inherit;text-decoration:none;">Phân Tích Dự Án An Cựu Galleria 2025</a>
+              </h3>
+              <p class="blog-card-excerpt" itemprop="description">
+                Đánh giá toàn diện dự án An Cựu Galleria: vị trí đắc địa trung tâm Huế, chính sách bán hàng hấp dẫn, tiến độ xây dựng và tiềm năng đầu tư dài hạn.
+              </p>
+              <div class="blog-card-footer">
+                <div class="blog-card-meta">
+                  <span>📅 <time datetime="2025-03-10">10/03/2025</time></span>
+                  <span>⏱️ 10 phút đọc</span>
+                </div>
+                <a href="#" class="blog-read-more" itemprop="url">Đọc thêm →</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Article 3: Thị trường -->
+          <article class="blog-card" data-cat="market" itemscope itemtype="https://schema.org/BlogPosting">
+            <div class="blog-card-img-wrap">
+              <img src="../images/shophouse.png" alt="Giá Đất Huế Tăng Mạnh Q1/2025" class="blog-card-img-inner" itemprop="image" loading="lazy" />
+              <span class="blog-card-badge-abs badge-cat-market">📊 Thị Trường</span>
+            </div>
+            <div class="blog-card-body">
+              <span class="blog-card-cat" itemprop="articleSection">Thị Trường Huế</span>
+              <h3 class="blog-card-title" itemprop="headline">
+                <a href="#" style="color:inherit;text-decoration:none;">Giá Đất Huế Tăng Mạnh Q1/2025</a>
+              </h3>
+              <p class="blog-card-excerpt" itemprop="description">
+                Bảng giá đất cập nhật các quận huyện tại Huế: An Cựu, Phú Vang, Hương Thủy và những khu vực có biên độ tăng mạnh nhất trong quý đầu năm 2025.
+              </p>
+              <div class="blog-card-footer">
+                <div class="blog-card-meta">
+                  <span>📅 <time datetime="2025-02-28">28/02/2025</time></span>
+                  <span>⏱️ 7 phút đọc</span>
+                </div>
+                <a href="#" class="blog-read-more" itemprop="url">Đọc thêm →</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Article 4: Pháp lý -->
+          <article class="blog-card" data-cat="legal" itemscope itemtype="https://schema.org/BlogPosting">
+            <div class="blog-card-img-wrap">
+              <img src="../images/land.png" alt="Hướng Dẫn Thủ Tục Mua Bán Nhà Đất" class="blog-card-img-inner" itemprop="image" loading="lazy" />
+              <span class="blog-card-badge-abs badge-cat-legal">⚖️ Pháp Lý</span>
+            </div>
+            <div class="blog-card-body">
+              <span class="blog-card-cat" itemprop="articleSection">Pháp Lý</span>
+              <h3 class="blog-card-title" itemprop="headline">
+                <a href="#" style="color:inherit;text-decoration:none;">Hướng Dẫn Thủ Tục Mua Bán Nhà Đất</a>
+              </h3>
+              <p class="blog-card-excerpt" itemprop="description">
+                Quy trình mua bán nhà đất tại Huế từ A đến Z: công chứng hợp đồng, sang tên sổ đỏ, nghĩa vụ thuế phí và những lưu ý pháp lý quan trọng.
+              </p>
+              <div class="blog-card-footer">
+                <div class="blog-card-meta">
+                  <span>📅 <time datetime="2025-02-20">20/02/2025</time></span>
+                  <span>⏱️ 9 phút đọc</span>
+                </div>
+                <a href="#" class="blog-read-more" itemprop="url">Đọc thêm →</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Article 5: Đầu tư -->
+          <article class="blog-card" data-cat="invest" itemscope itemtype="https://schema.org/BlogPosting">
+            <div class="blog-card-img-wrap">
+              <img src="../images/shophouse.png" alt="Top 5 Khu Vực Đầu Tư Tiềm Năng Tại Huế" class="blog-card-img-inner" itemprop="image" loading="lazy" />
+              <span class="blog-card-badge-abs badge-cat-invest">💰 Đầu Tư</span>
+            </div>
+            <div class="blog-card-body">
+              <span class="blog-card-cat" itemprop="articleSection">Kiến Thức Đầu Tư</span>
+              <h3 class="blog-card-title" itemprop="headline">
+                <a href="#" style="color:inherit;text-decoration:none;">Top 5 Khu Vực Đầu Tư Tiềm Năng</a>
+              </h3>
+              <p class="blog-card-excerpt" itemprop="description">
+                Phân tích chuyên sâu 5 khu vực có tiềm năng sinh lời cao nhất tại Huế năm 2025: hạ tầng đồng bộ, quy hoạch rõ ràng và dư địa tăng giá lớn.
+              </p>
+              <div class="blog-card-footer">
+                <div class="blog-card-meta">
+                  <span>📅 <time datetime="2025-02-10">10/02/2025</time></span>
+                  <span>⏱️ 8 phút đọc</span>
+                </div>
+                <a href="#" class="blog-read-more" itemprop="url">Đọc thêm →</a>
+              </div>
+            </div>
+          </article>
+
+          <!-- Article 6: Kinh nghiệm -->
+          <article class="blog-card" data-cat="invest" itemscope itemtype="https://schema.org/BlogPosting">
+            <div class="blog-card-img-wrap">
+              <img src="../images/apartment.png" alt="Kinh Nghiệm Đầu Tư BDS Lần Đầu" class="blog-card-img-inner" itemprop="image" loading="lazy" />
+              <span class="blog-card-badge-abs badge-cat-invest">💰 Đầu Tư</span>
+            </div>
+            <div class="blog-card-body">
+              <span class="blog-card-cat" itemprop="articleSection">Kiến Thức Đầu Tư</span>
+              <h3 class="blog-card-title" itemprop="headline">
+                <a href="#" style="color:inherit;text-decoration:none;">Kinh Nghiệm Đầu Tư BDS Lần Đầu</a>
+              </h3>
+              <p class="blog-card-excerpt" itemprop="description">
+                Hướng dẫn toàn diện cho người mới bắt đầu đầu tư bất động sản: xác định ngân sách, chọn loại hình phù hợp, đánh giá rủi ro và xây dựng danh mục đầu tư.
+              </p>
+              <div class="blog-card-footer">
+                <div class="blog-card-meta">
+                  <span>📅 <time datetime="2025-01-25">25/01/2025</time></span>
+                  <span>⏱️ 11 phút đọc</span>
+                </div>
+                <a href="#" class="blog-read-more" itemprop="url">Đọc thêm →</a>
+              </div>
+            </div>
+          </article>
+
+        </div>
+
+        <!-- PAGINATION -->
+        <nav class="pagination" aria-label="Phân trang blog">
+          <a href="#" class="page-btn page-btn-arrow" aria-label="Trang trước">‹</a>
+          <a href="#" class="page-btn active" aria-current="page" aria-label="Trang 1">1</a>
+          <a href="#" class="page-btn" aria-label="Trang 2">2</a>
+          <a href="#" class="page-btn" aria-label="Trang 3">3</a>
+          <span class="page-btn" style="cursor:default;color:var(--text-muted);">…</span>
+          <a href="#" class="page-btn" aria-label="Trang 8">8</a>
+          <a href="#" class="page-btn page-btn-arrow" aria-label="Trang sau">›</a>
+        </nav>
+      </div>
+
+      <!-- SIDEBAR -->
+      <aside class="sidebar" aria-label="Thanh bên blog">
+        <!-- Search Widget -->
+        <div class="sidebar-widget">
+          <h2 class="sidebar-widget-title">Tìm Kiếm</h2>
+          <div class="sidebar-search" role="search">
+            <input
+              type="search"
+              class="sidebar-search-input"
+              placeholder="Tìm bài viết..."
+              aria-label="Tìm kiếm bài viết"
+            />
+            <button class="sidebar-search-btn" aria-label="Tìm kiếm">🔍</button>
+          </div>
+        </div>
+
+        <!-- Popular Posts -->
+        <div class="sidebar-widget">
+          <h2 class="sidebar-widget-title">Bài Viết Phổ Biến</h2>
+          <div>
+            <a href="#" class="popular-post">
+              <span class="popular-post-num">01</span>
+              <div>
+                <div class="popular-post-title">Giá Đất Huế Tăng Mạnh Q1/2025 – Phân Tích Chi Tiết</div>
+                <div class="popular-post-date">20/03/2025 · 8 phút đọc</div>
+              </div>
+            </a>
+            <a href="#" class="popular-post">
+              <span class="popular-post-num">02</span>
+              <div>
+                <div class="popular-post-title">5 Lưu Ý Quan Trọng Khi Mua Đất Nền Tại Huế</div>
+                <div class="popular-post-date">15/03/2025 · 6 phút đọc</div>
+              </div>
+            </a>
+            <a href="#" class="popular-post">
+              <span class="popular-post-num">03</span>
+              <div>
+                <div class="popular-post-title">Phân Tích Dự Án An Cựu Galleria 2025</div>
+                <div class="popular-post-date">10/03/2025 · 10 phút đọc</div>
+              </div>
+            </a>
+            <a href="#" class="popular-post">
+              <span class="popular-post-num">04</span>
+              <div>
+                <div class="popular-post-title">Top 5 Khu Vực Đầu Tư Tiềm Năng Tại Huế Năm 2025</div>
+                <div class="popular-post-date">10/02/2025 · 8 phút đọc</div>
+              </div>
+            </a>
+            <a href="#" class="popular-post">
+              <span class="popular-post-num">05</span>
+              <div>
+                <div class="popular-post-title">Hướng Dẫn Thủ Tục Mua Bán Nhà Đất Tại Huế</div>
+                <div class="popular-post-date">20/02/2025 · 9 phút đọc</div>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Categories List -->
+        <div class="sidebar-widget">
+          <h2 class="sidebar-widget-title">Danh Mục</h2>
+          <div>
+            <a href="#" class="cat-list-item">
+              <span>💰 Kiến Thức Đầu Tư</span>
+              <span class="cat-list-count">18</span>
+            </a>
+            <a href="#" class="cat-list-item">
+              <span>⚖️ Pháp Lý Nhà Đất</span>
+              <span class="cat-list-count">12</span>
+            </a>
+            <a href="#" class="cat-list-item">
+              <span>🏗️ Phân Tích Dự Án</span>
+              <span class="cat-list-count">9</span>
+            </a>
+            <a href="#" class="cat-list-item">
+              <span>📊 Thị Trường Huế</span>
+              <span class="cat-list-count">15</span>
+            </a>
+            <a href="#" class="cat-list-item">
+              <span>🏠 Kinh Nghiệm Mua Nhà</span>
+              <span class="cat-list-count">7</span>
+            </a>
+            <a href="#" class="cat-list-item">
+              <span>💡 Tin Tức BDS</span>
+              <span class="cat-list-count">21</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Lead Form -->
+        <div class="sidebar-widget sidebar-lead-widget" id="sidebar-lead">
+          <h2 class="sidebar-widget-title" style="color:var(--gold-light);">Nhận Tư Vấn Miễn Phí</h2>
+          <div class="sidebar-lead-title">🏠 Tìm BDS Phù Hợp?</div>
+          <p class="sidebar-lead-sub">Để chuyên gia tư vấn miễn phí – nhanh chóng, không ràng buộc.</p>
+          <form onsubmit="submitSidebarLead(event)" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="sl-name">Họ và tên *</label>
+              <input type="text" id="sl-name" class="form-control" placeholder="Nguyễn Văn A" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sl-phone">Số điện thoại *</label>
+              <input type="tel" id="sl-phone" class="form-control" placeholder="0901 234 567" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="sl-interest">Quan tâm đến</label>
+              <select id="sl-interest" class="form-control">
+                <option value="">Chọn loại BDS</option>
+                <option>Shophouse</option>
+                <option>Nhà Phố</option>
+                <option>Đất Nền</option>
+                <option>Căn Hộ</option>
+                <option>Biệt Thự</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;">
+              🚀 Gửi Yêu Cầu Tư Vấn
+            </button>
+            <p style="font-size:0.72rem;color:var(--text-muted);text-align:center;margin-top:10px;">
+              🔒 Thông tin bảo mật tuyệt đối
+            </p>
+          </form>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════ -->
+<footer class="footer" role="contentinfo" aria-label="Footer">
+  <div class="container">
+    <div class="footer-grid">
+      <!-- Brand -->
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="nav-logo-icon" style="width:48px;height:48px;font-size:1.4rem;">A</div>
+            <div>
+              <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:800;color:var(--text);">An Cựu Galleria</div>
+              <div style="font-size:0.72rem;color:var(--gold);font-weight:500;letter-spacing:0.08em;text-transform:uppercase;">Bất Động Sản Huế</div>
+            </div>
+          </div>
+        </div>
+        <p class="footer-desc">
+          Chuyên tư vấn mua bán bất động sản cao cấp tại Huế. Shophouse, nhà phố, đất nền, căn hộ và dự án. Minh bạch – Uy tín – Chuyên nghiệp.
+        </p>
+        <div class="footer-socials" aria-label="Mạng xã hội">
+          <a href="https://www.facebook.com/ancuugalleriahue" class="social-btn" aria-label="Facebook">𝕗</a>
+          <a href="https://zalo.me/0907272001" class="social-btn" aria-label="Zalo">Z</a>
+          <a href="https://www.youtube.com/@ancuugalleriahue" class="social-btn" aria-label="YouTube">▶</a>
+          <a href="https://www.tiktok.com/@ancuugalleriahue" class="social-btn" aria-label="TikTok">♪</a>
+        </div>
+      </div>
+
+      <!-- Links 1 -->
+      <div>
+        <h3 class="footer-col-title">Bất Động Sản</h3>
+        <ul class="footer-links" role="list">
+          <li><a href="bat-dong-san.html?loai=shophouse" class="footer-link">→ Shophouse Huế</a></li>
+          <li><a href="bat-dong-san.html?loai=nha-pho" class="footer-link">→ Nhà Phố Huế</a></li>
+          <li><a href="bat-dong-san.html?loai=dat-nen" class="footer-link">→ Đất Nền Huế</a></li>
+          <li><a href="bat-dong-san.html?loai=can-ho" class="footer-link">→ Căn Hộ Huế</a></li>
+          <li><a href="du-an.html" class="footer-link">→ Dự Án Mới</a></li>
+        </ul>
+      </div>
+
+      <!-- Links 2 -->
+      <div>
+        <h3 class="footer-col-title">Khu Vực</h3>
+        <ul class="footer-links" role="list">
+          <li><a href="gia-dat-hue/an-cuu.html" class="footer-link">→ Giá đất An Cựu</a></li>
+          <li><a href="gia-dat-hue/thuy-duong.html" class="footer-link">→ Giá đất Thủy Dương</a></li>
+          <li><a href="gia-dat-hue/phu-thuong.html" class="footer-link">→ Giá đất Phú Thượng</a></li>
+          <li><a href="gia-dat-hue/vy-da.html" class="footer-link">→ Giá đất Vỹ Dạ</a></li>
+          <li><a href="gia-dat-hue/huong-thuy.html" class="footer-link">→ Giá đất Hương Thủy</a></li>
+        </ul>
+      </div>
+
+      <!-- Links 3 -->
+      <div>
+        <h3 class="footer-col-title">Thông Tin</h3>
+        <ul class="footer-links" role="list">
+          <li><a href="gioi-thieu.html" class="footer-link">→ Giới Thiệu</a></li>
+          <li><a href="blog.html" class="footer-link">→ Blog &amp; Tin Tức</a></li>
+          <li><a href="lien-he.html" class="footer-link">→ Liên Hệ</a></li>
+          <li><a href="chinh-sach-bao-mat.html" class="footer-link">→ Chính Sách Bảo Mật</a></li>
+        </ul>
+        <div style="margin-top:24px;">
+          <h3 class="footer-col-title">Liên Hệ</h3>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <a href="tel:0907272001" class="footer-link">📞 0907.272.001</a>
+            <a href="https://zalo.me/0907272001" class="footer-link">💬 Zalo: 0907.272.001</a>
+            <span class="footer-link">📍 An Cựu, TP. Huế</span>
+            <span class="footer-link">🕐 8:00 – 20:00, 7 ngày/tuần</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 An Cựu Galleria Huế. Bảo lưu mọi quyền.</p>
+      <p class="footer-copy">Thiết kế bởi <span style="color:var(--gold);">An Cựu Galleria</span> • ĐKKD: Thừa Thiên Huế</p>
+    </div>
+  </div>
+</footer>
+
+<!-- Floating CTA (Mobile) -->
+<div class="floating-cta" role="complementary" aria-label="Liên hệ nhanh">
+  <a href="tel:0907272001" class="float-btn float-btn-call" aria-label="Gọi điện">
+    📞 <span>Gọi Điện</span>
+  </a>
+  <a href="https://zalo.me/0907272001" class="float-btn float-btn-zalo" aria-label="Chat Zalo" target="_blank" rel="noopener">
+    Z <span>Zalo</span>
+  </a>
+  <a href="https://m.me/ancuugalleriahue" class="float-btn float-btn-msg" aria-label="Messenger" target="_blank" rel="noopener">
+    💬 <span>Messenger</span>
+  </a>
+</div>
+
+<!-- Scroll Top -->
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Lên đầu trang">↑</button>
+
+<!-- Toast -->
+<div class="toast" id="success-toast" role="alert" aria-live="polite">
+  <span class="toast-icon">✓</span>
+  Gửi thành công! Chúng tôi sẽ liên hệ sớm nhất.
+</div>
+
+<!-- ═══════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ─── Navbar scroll ───
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 60);
+  const scrollTop = document.getElementById('scrollTop');
+  scrollTop.classList.toggle('visible', window.scrollY > 400);
+}, { passive: true });
+
+// ─── Mobile Menu ───
+const hamburger = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobile-menu');
+const closeBtn = document.getElementById('close-mobile');
+
+hamburger.addEventListener('click', () => {
+  mobileMenu.classList.add('open');
+  hamburger.setAttribute('aria-expanded', 'true');
+  document.body.style.overflow = 'hidden';
+});
+closeBtn.addEventListener('click', closeMobileMenu);
+function closeMobileMenu() {
+  mobileMenu.classList.remove('open');
+  hamburger.setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeMobileMenu();
+});
+
+// ─── Category Filter ───
+function filterCat(btn, cat) {
+  document.querySelectorAll('.cat-tab').forEach(t => {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+  });
+  btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
+
+  const cards = document.querySelectorAll('.blog-card');
+  cards.forEach(card => {
+    if (cat === 'all' || card.dataset.cat === cat) {
+      card.style.display = 'flex';
+      setTimeout(() => card.style.opacity = '1', 10);
+    } else {
+      card.style.opacity = '0';
+      setTimeout(() => card.style.display = 'none', 300);
+    }
+  });
+}
+
+// ─── Sidebar Lead Form ───
+function submitSidebarLead(e) {
+  e.preventDefault();
+  const name = document.getElementById('sl-name').value.trim();
+  const phone = document.getElementById('sl-phone').value.trim();
+  if (!name || !phone) {
+    alert('Vui lòng nhập đầy đủ họ tên và số điện thoại.');
+    return;
+  }
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.textContent = '⏳ Đang gửi...';
+  btn.disabled = true;
+  setTimeout(() => {
+    const toast = document.getElementById('success-toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 4000);
+    e.target.reset();
+    btn.textContent = '🚀 Gửi Yêu Cầu Tư Vấn';
+    btn.disabled = false;
+  }, 1200);
+}
+
+// ─── Intersection Observer for cards ───
+const animObs = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.blog-card, .blog-featured').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+  animObs.observe(el);
+});
+
+console.log('%c📝 An Cựu Galleria Blog', 'color:#D4AF37;font-size:16px;font-weight:bold;');
+</script>
+
+</body>
+</html>
