@@ -1,1 +1,1102 @@
-﻿PLACEHOLDER
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Bất Động Sản – An Cựu Galleria Admin</title>
+  <link rel="stylesheet" href="../admin.css">
+  <style>
+    /* ─── PAGE-SPECIFIC STYLES ─────────────────────────────── */
+    .bulk-bar {
+      display: none; align-items: center; gap: 12px;
+      background: var(--bg-elevated); border: 1px solid var(--border-gold);
+      border-radius: var(--radius); padding: 12px 20px; margin-bottom: 16px;
+      animation: fadeIn 0.2s ease; flex-wrap: wrap;
+    }
+    .bulk-bar.visible { display: flex; }
+    .bulk-bar-count  { font-size: 0.875rem; font-weight: 700; color: var(--gold); }
+    .bulk-bar-label  { font-size: 0.8rem; color: var(--text-2); flex: 1; min-width: 80px; }
+    .bulk-bar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .prop-thumb {
+      width: 62px; height: 47px; object-fit: cover;
+      border-radius: 6px; border: 1px solid var(--border);
+      background: var(--bg-card); display: block;
+    }
+    .prop-thumb-placeholder {
+      width: 62px; height: 47px; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--bg-card);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; color: var(--text-3);
+    }
+    .type-pill {
+      display: inline-block; padding: 2px 8px; border-radius: 99px;
+      font-size: 0.68rem; font-weight: 600; margin-top: 3px;
+    }
+    .type-shophouse { background: rgba(212,175,55,0.13);  color: var(--gold); }
+    .type-nha-pho   { background: rgba(59,130,246,0.13);  color: #60a5fa; }
+    .type-dat-nen   { background: rgba(34,197,94,0.13);   color: #4ade80; }
+    .type-can-ho    { background: rgba(168,85,247,0.13);  color: #c084fc; }
+    .type-biet-thu  { background: rgba(239,68,68,0.13);   color: #f87171; }
+
+    .row-checkbox { width: 16px; height: 16px; accent-color: var(--gold); cursor: pointer; }
+
+    .action-btn {
+      width: 30px; height: 30px; border-radius: 6px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 0.82rem; transition: all 0.18s;
+      border: 1px solid var(--border); background: var(--bg-card);
+      color: var(--text-2); cursor: pointer;
+    }
+    .action-btn:hover { color: #fff; }
+    .action-btn.edit:hover { background: var(--info);    border-color: var(--info); }
+    .action-btn.view:hover { background: var(--success); border-color: var(--success); }
+    .action-btn.del:hover  { background: var(--danger);  border-color: var(--danger); }
+
+    .mini-toggle { position: relative; width: 36px; height: 20px; display: inline-block; flex-shrink: 0; }
+    .mini-toggle input { display: none; }
+    .mini-toggle-slider {
+      position: absolute; inset: 0;
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      border-radius: 99px; cursor: pointer; transition: all 0.2s;
+    }
+    .mini-toggle-slider::before {
+      content: ''; position: absolute;
+      width: 12px; height: 12px; background: var(--text-3);
+      border-radius: 50%; top: 3px; left: 3px; transition: all 0.2s;
+    }
+    .mini-toggle input:checked + .mini-toggle-slider { background: var(--gold); border-color: var(--gold); }
+    .mini-toggle input:checked + .mini-toggle-slider::before { transform: translateX(16px); background: #1C2139; }
+    .mini-toggle.hot input:checked + .mini-toggle-slider { background: var(--danger); border-color: var(--danger); }
+
+    .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .modal-grid .full-col { grid-column: 1 / -1; }
+    @media (max-width: 640px) {
+      .modal-grid { grid-template-columns: 1fr; }
+      .modal-grid .full-col { grid-column: 1; }
+    }
+
+    .gallery-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+      gap: 8px; margin-top: 12px;
+    }
+    .gallery-item {
+      position: relative; aspect-ratio: 1; border-radius: 8px;
+      overflow: hidden; border: 1px solid var(--border);
+    }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+    .gallery-remove {
+      position: absolute; top: 3px; right: 3px; width: 18px; height: 18px;
+      background: rgba(239,68,68,0.92); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.62rem; color: #fff; cursor: pointer; border: none;
+    }
+    .gallery-add {
+      aspect-ratio: 1; border-radius: 8px; border: 2px dashed var(--border);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; cursor: pointer; font-size: 0.7rem;
+      color: var(--text-3); transition: all 0.18s; background: none;
+    }
+    .gallery-add:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+    .gallery-add-icon { font-size: 1.3rem; }
+
+    .detail-section-title {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--gold); margin: 20px 0 12px;
+      padding-bottom: 6px; border-bottom: 1px solid var(--border-gold);
+    }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; }
+    @media (max-width: 540px) { .detail-grid { grid-template-columns: 1fr; } }
+    .detail-item label {
+      display: block; font-size: 0.7rem; font-weight: 600; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px;
+    }
+    .detail-item .detail-val { font-size: 0.9rem; color: var(--text); font-weight: 500; }
+    .detail-hero-img {
+      width: 100%; height: 210px; object-fit: cover;
+      border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 8px;
+    }
+    .detail-gallery-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .detail-gallery-strip img {
+      width: 60px; height: 50px; object-fit: cover;
+      border-radius: 6px; border: 1px solid var(--border);
+    }
+    .detail-desc {
+      font-size: 0.875rem; color: var(--text-2); line-height: 1.7;
+      background: var(--bg-card); border-radius: var(--radius-sm); padding: 14px 16px;
+    }
+    .detail-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+
+    .confirm-icon { font-size: 3rem; text-align: center; margin-bottom: 12px; }
+    .confirm-msg  { font-size: 0.9rem; color: var(--text-2); text-align: center; line-height: 1.65; white-space: pre-line; }
+
+    .table-empty td { text-align: center; padding: 52px 24px; }
+    .th-checkbox   { width: 42px; }
+    .td-price      { font-weight: 700; color: var(--gold); white-space: nowrap; }
+    .td-area-cell  { color: var(--text-2); white-space: nowrap; font-size: 0.82rem; }
+
+    .star-icon { font-size: 1.05rem; cursor: pointer; user-select: none; transition: transform 0.15s; }
+    .star-icon.on  { color: var(--gold); filter: drop-shadow(0 0 4px rgba(212,175,55,0.6)); }
+    .star-icon.off { color: var(--text-3); }
+    .star-icon:hover { transform: scale(1.25); }
+
+    .avatar-preview-wrap { position: relative; display: inline-block; margin-top: 12px; }
+    .avatar-preview-wrap img {
+      width: 120px; height: 90px; object-fit: cover;
+      border-radius: var(--radius-sm); border: 1px solid var(--border);
+    }
+    .avatar-preview-remove {
+      position: absolute; top: -6px; right: -6px; width: 22px; height: 22px;
+      background: var(--danger); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.68rem; color: #fff; cursor: pointer; border: none;
+    }
+
+    .toggle-row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .toggle-item {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 9px 14px; cursor: pointer; user-select: none;
+    }
+    .toggle-item span { font-size: 0.875rem; font-weight: 500; }
+
+    .pagi-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px 16px; font-size: 0.82rem; color: var(--text-2);
+      flex-wrap: wrap; gap: 8px;
+    }
+    .pagi-btns { display: flex; gap: 5px; flex-wrap: wrap; }
+    .pagi-btn {
+      width: 30px; height: 30px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 600;
+      border: 1px solid var(--border); background: var(--bg-card);
+      color: var(--text-2); cursor: pointer; transition: all 0.18s;
+    }
+    .pagi-btn:hover { background: var(--bg-elevated); color: var(--text); }
+    .pagi-btn.active { background: var(--gold); color: #1C2139; border-color: var(--gold); }
+    .pagi-btn:disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+
+    .th-sort { cursor: pointer; user-select: none; }
+    .th-sort:hover { color: var(--gold); }
+    .sort-arrow { font-size: 0.65rem; margin-left: 3px; opacity: 0.35; }
+    .sort-arrow.active { opacity: 1; color: var(--gold); }
+  </style>
+</head>
+<body>
+
+<div class="admin-layout">
+
+  <!-- ─── SIDEBAR ────────────────────────────────────────── -->
+  <aside class="admin-sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">A</div>
+        <div class="sidebar-logo-text">
+          <strong>An Cựu Galleria</strong>
+          <span>Admin CMS</span>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Tổng Quan</div>
+      <a class="admin-nav-link" href="dashboard.html">
+        <span class="nav-icon">📊</span> Dashboard
+      </a>
+      <div class="nav-section-title">Nội Dung</div>
+      <a class="admin-nav-link active" href="properties.html">
+        <span class="nav-icon">🏠</span> Bất Động Sản
+      </a>
+      <a class="admin-nav-link" href="projects.html">
+        <span class="nav-icon">🏗️</span> Dự Án
+      </a>
+      <a class="admin-nav-link" href="blog.html">
+        <span class="nav-icon">📝</span> Bài Viết
+      </a>
+      <a class="admin-nav-link" href="gallery.html">
+        <span class="nav-icon">🖼️</span> Thư Viện Ảnh
+      </a>
+      <div class="nav-section-title">Khách Hàng</div>
+      <a class="admin-nav-link" href="leads.html">
+        <span class="nav-icon">📋</span> Khách Hàng
+        <span class="nav-badge" id="lead-count">0</span>
+      </a>
+      <a class="admin-nav-link" href="inquiries.html">
+        <span class="nav-icon">💬</span> Yêu Cầu
+      </a>
+      <div class="nav-section-title">Hệ Thống</div>
+      <a class="admin-nav-link" href="settings.html">
+        <span class="nav-icon">⚙️</span> Cài Đặt
+      </a>
+      <a class="admin-nav-link" href="seo.html">
+        <span class="nav-icon">🔍</span> SEO
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="user-avatar">A</div>
+        <div class="sidebar-user-info">
+          <strong id="user-email-display">Admin</strong>
+          <span>Quản trị viên</span>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-sm btn-full" onclick="Auth.logout()">🚪 Đăng Xuất</button>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ─────────────────────────────────────────────── -->
+  <main class="admin-main">
+
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+        <div>
+          <div class="topbar-title">Quản Lý Bất Động Sản</div>
+          <div class="topbar-breadcrumb">CMS › Bất Động Sản</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-ghost btn-sm" onclick="refreshData()" title="Làm mới">🔄</button>
+        <button class="btn btn-gold btn-sm" onclick="openAddModal()">➕ Thêm BĐS Mới</button>
+      </div>
+    </header>
+
+    <div class="admin-content">
+
+      <!-- A. STATS ROW -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon gold">🏠</div>
+          <div><div class="stat-value" id="stat-total">—</div><div class="stat-label">Tổng BĐS</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">✅</div>
+          <div><div class="stat-value" id="stat-available">—</div><div class="stat-label">Đang bán</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red">🔒</div>
+          <div><div class="stat-value" id="stat-sold">—</div><div class="stat-label">Đã bán</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon gold">⭐</div>
+          <div><div class="stat-value" id="stat-featured">—</div><div class="stat-label">Nổi bật</div></div>
+        </div>
+      </div>
+
+      <!-- B. FILTER BAR -->
+      <div class="filter-bar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="search-input"
+                 placeholder="Tìm theo tiêu đề..." oninput="applyFilters()">
+        </div>
+        <select class="filter-select" id="filter-type" onchange="applyFilters()">
+          <option value="">Tất cả loại hình</option>
+          <option value="shophouse">Shophouse</option>
+          <option value="nha-pho">Nhà Phố</option>
+          <option value="dat-nen">Đất Nền</option>
+          <option value="can-ho">Căn Hộ</option>
+          <option value="biet-thu">Biệt Thự</option>
+        </select>
+        <select class="filter-select" id="filter-area" onchange="applyFilters()">
+          <option value="">Tất cả khu vực</option>
+          <option value="An Cựu">An Cựu</option>
+          <option value="Vỹ Dạ">Vỹ Dạ</option>
+          <option value="Thủy Dương">Thủy Dương</option>
+          <option value="Hương Thủy">Hương Thủy</option>
+          <option value="An Vân Dương">An Vân Dương</option>
+        </select>
+        <select class="filter-select" id="filter-status" onchange="applyFilters()">
+          <option value="">Tất cả trạng thái</option>
+          <option value="available">Đang bán</option>
+          <option value="sold">Đã bán</option>
+          <option value="pending">Pending</option>
+        </select>
+        <button class="btn btn-gold btn-sm" onclick="openAddModal()">➕ Thêm BĐS Mới</button>
+      </div>
+
+      <!-- D. BULK ACTION BAR -->
+      <div class="bulk-bar" id="bulk-bar">
+        <span class="bulk-bar-count" id="bulk-count">0</span>
+        <span class="bulk-bar-label">BĐS được chọn</span>
+        <div class="bulk-bar-actions">
+          <button class="btn btn-danger btn-sm" onclick="bulkDelete()">🗑️ Xóa</button>
+          <button class="btn btn-outline btn-sm" onclick="bulkChangeStatus()">🔄 Đổi Trạng Thái</button>
+          <button class="btn btn-outline btn-sm" onclick="bulkFeature()">⭐ Đánh Dấu Nổi Bật</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearSelection()">✕ Bỏ Chọn</button>
+        </div>
+      </div>
+
+      <!-- C. PROPERTIES TABLE -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            📋 Danh Sách Bất Động Sản
+            <span id="table-count" style="font-size:0.78rem;font-weight:400;color:var(--text-3);margin-left:8px;"></span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span style="font-size:0.78rem;color:var(--text-3);">Sắp xếp:</span>
+            <select class="filter-select" id="sort-select" onchange="applyFilters()" style="min-width:118px;">
+              <option value="id-desc">Mới nhất</option>
+              <option value="id-asc">Cũ nhất</option>
+              <option value="title-asc">Tên A–Z</option>
+              <option value="price-asc">Giá tăng</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th class="th-checkbox">
+                  <input type="checkbox" class="row-checkbox" id="select-all" onchange="toggleSelectAll(this)">
+                </th>
+                <th>Ảnh</th>
+                <th class="th-sort" onclick="sortBy('title')">Tiêu Đề / Loại <span class="sort-arrow" id="sa-title">⇅</span></th>
+                <th>Khu Vực</th>
+                <th class="th-sort" onclick="sortBy('price')">Giá <span class="sort-arrow" id="sa-price">⇅</span></th>
+                <th>Diện Tích</th>
+                <th>Trạng Thái</th>
+                <th style="text-align:center;">Nổi Bật</th>
+                <th style="text-align:center;">Hot</th>
+                <th>Hành Động</th>
+              </tr>
+            </thead>
+            <tbody id="props-tbody">
+              <tr class="table-empty">
+                <td colspan="10">
+                  <div class="empty-icon">🏠</div>
+                  <div class="empty-title">Đang tải dữ liệu...</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagi-bar">
+          <span id="pagi-info"></span>
+          <div class="pagi-btns" id="pagi-btns"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+
+<!-- ═══════ E. ADD / EDIT MODAL ════════════════════════════ -->
+<div class="modal-overlay" id="prop-modal" onclick="handleOverlayClick(event,'prop-modal')">
+  <div class="modal-box modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">
+        <span id="modal-icon">🏠</span>
+        <span id="modal-title-text">Thêm BĐS Mới</span>
+      </div>
+      <button class="modal-close-btn" onclick="closeModal('prop-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="prop-form" onsubmit="handleFormSubmit(event)" novalidate>
+        <input type="hidden" id="form-id">
+        <div class="modal-grid">
+
+          <div class="form-group full-col">
+            <label class="form-label">Tiêu Đề <span style="color:var(--danger)">*</span></label>
+            <input type="text" class="form-control" id="f-title"
+                   placeholder="VD: Shophouse 3 tầng mặt tiền Trần Phú">
+            <div id="err-title" style="color:var(--danger);font-size:0.77rem;margin-top:4px;display:none;"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Loại Hình <span style="color:var(--danger)">*</span></label>
+            <select class="form-control" id="f-type">
+              <option value="">-- Chọn loại hình --</option>
+              <option value="shophouse">Shophouse</option>
+              <option value="nha-pho">Nhà Phố</option>
+              <option value="dat-nen">Đất Nền</option>
+              <option value="can-ho">Căn Hộ</option>
+              <option value="biet-thu">Biệt Thự</option>
+            </select>
+            <div id="err-type" style="color:var(--danger);font-size:0.77rem;margin-top:4px;display:none;"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Khu Vực <span style="color:var(--danger)">*</span></label>
+            <select class="form-control" id="f-area">
+              <option value="">-- Chọn khu vực --</option>
+              <option value="An Cựu">An Cựu</option>
+              <option value="Vỹ Dạ">Vỹ Dạ</option>
+              <option value="Thủy Dương">Thủy Dương</option>
+              <option value="Hương Thủy">Hương Thủy</option>
+              <option value="An Vân Dương">An Vân Dương</option>
+            </select>
+            <div id="err-area" style="color:var(--danger);font-size:0.77rem;margin-top:4px;display:none;"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Giá <span style="color:var(--danger)">*</span></label>
+            <input type="text" class="form-control" id="f-price" placeholder="VD: 6,8 tỷ">
+            <div id="err-price" style="color:var(--danger);font-size:0.77rem;margin-top:4px;display:none;"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Diện Tích</label>
+            <input type="text" class="form-control" id="f-area-size" placeholder="VD: 85 m²">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Mặt Tiền</label>
+            <input type="text" class="form-control" id="f-frontage" placeholder="VD: 5m">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Hướng</label>
+            <select class="form-control" id="f-direction">
+              <option value="">-- Chọn hướng --</option>
+              <option value="Đông">Đông</option>
+              <option value="Tây">Tây</option>
+              <option value="Nam">Nam</option>
+              <option value="Bắc">Bắc</option>
+              <option value="Đông Nam">Đông Nam</option>
+              <option value="Đông Bắc">Đông Bắc</option>
+              <option value="Tây Nam">Tây Nam</option>
+              <option value="Tây Bắc">Tây Bắc</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Số Tầng</label>
+            <input type="number" class="form-control" id="f-floors" placeholder="VD: 3" min="1" max="50">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Pháp Lý</label>
+            <select class="form-control" id="f-legal">
+              <option value="">-- Chọn pháp lý --</option>
+              <option value="Sổ đỏ">Sổ đỏ</option>
+              <option value="Sổ hồng">Sổ hồng</option>
+              <option value="Hợp đồng">Hợp đồng</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Trạng Thái</label>
+            <select class="form-control" id="f-status">
+              <option value="available">Đang bán</option>
+              <option value="sold">Đã bán</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+
+          <div class="form-group full-col">
+            <label class="form-label">URL Video YouTube</label>
+            <input type="text" class="form-control" id="f-video"
+                   placeholder="VD: https://youtu.be/xxxxx">
+          </div>
+
+          <div class="form-group full-col">
+            <label class="form-label">Mô Tả</label>
+            <textarea class="form-control" id="f-desc" rows="4"
+                      placeholder="Mô tả chi tiết về bất động sản..."></textarea>
+          </div>
+
+          <div class="form-group full-col">
+            <label class="form-label">Ảnh Đại Diện</label>
+            <div class="upload-zone" id="avatar-zone"
+                 ondragover="handleDragOver(event,'avatar-zone')"
+                 ondragleave="handleDragLeave('avatar-zone')"
+                 ondrop="handleAvatarDrop(event)">
+              <input type="file" id="avatar-file" accept="image/*" onchange="handleAvatarUpload(event)">
+              <div class="upload-zone-icon">📸</div>
+              <div class="upload-zone-text">
+                <strong>Kéo &amp; thả ảnh</strong> hoặc click để chọn<br>
+                <small style="color:var(--text-3)">JPG, PNG, WebP – tối đa 5MB</small>
+              </div>
+            </div>
+            <div id="avatar-preview-container"></div>
+            <input type="hidden" id="f-image">
+          </div>
+
+          <div class="form-group full-col">
+            <label class="form-label">
+              Thư Viện Ảnh
+              <span style="font-weight:400;color:var(--text-3);font-size:0.73rem;text-transform:none;letter-spacing:0"> (tối đa 10 ảnh)</span>
+            </label>
+            <div class="gallery-grid" id="gallery-grid"></div>
+            <input type="file" id="gallery-file" accept="image/*" multiple
+                   style="display:none" onchange="handleGalleryUpload(event)">
+          </div>
+
+          <div class="form-group full-col">
+            <label class="form-label">Cài Đặt Hiển Thị</label>
+            <div class="toggle-row">
+              <label class="toggle-item" for="f-featured">
+                <label class="toggle" for="f-featured">
+                  <input type="checkbox" id="f-featured">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span>⭐ Nổi Bật</span>
+              </label>
+              <label class="toggle-item" for="f-hot">
+                <label class="toggle" for="f-hot">
+                  <input type="checkbox" id="f-hot">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span>🔥 Hot</span>
+              </label>
+            </div>
+          </div>
+
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('prop-modal')">Hủy</button>
+      <button class="btn btn-gold" id="save-btn" onclick="handleFormSubmit(event)">💾 Lưu BĐS</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════ F. VIEW DETAIL MODAL ══════════════════════════ -->
+<div class="modal-overlay" id="view-modal" onclick="handleOverlayClick(event,'view-modal')">
+  <div class="modal-box modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">👁 Chi Tiết Bất Động Sản</div>
+      <button class="modal-close-btn" onclick="closeModal('view-modal')">✕</button>
+    </div>
+    <div class="modal-body" id="view-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('view-modal')">Đóng</button>
+      <button class="btn btn-gold btn-sm" id="view-edit-btn">✏️ Chỉnh Sửa</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════ BULK STATUS MODAL ════════════════════════════ -->
+<div class="modal-overlay" id="bulk-status-modal" onclick="handleOverlayClick(event,'bulk-status-modal')">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">🔄 Đổi Trạng Thái Hàng Loạt</div>
+      <button class="modal-close-btn" onclick="closeModal('bulk-status-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Chọn Trạng Thái Mới</label>
+        <select class="form-control" id="bulk-status-val">
+          <option value="available">Đang bán</option>
+          <option value="sold">Đã bán</option>
+          <option value="pending">Pending</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('bulk-status-modal')">Hủy</button>
+      <button class="btn btn-gold" onclick="applyBulkStatus()">✅ Áp Dụng</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════ CONFIRM MODAL ════════════════════════════════ -->
+<div class="modal-overlay" id="confirm-modal" onclick="handleOverlayClick(event,'confirm-modal')">
+  <div class="modal-box modal-sm">
+    <div class="modal-body" style="text-align:center;padding:36px 28px 24px;">
+      <div class="confirm-icon">⚠️</div>
+      <p class="confirm-msg" id="confirm-msg">Bạn có chắc chắn?</p>
+    </div>
+    <div class="modal-footer" style="justify-content:center;gap:12px;padding-top:0;">
+      <button class="btn btn-outline" onclick="closeModal('confirm-modal')">Hủy Bỏ</button>
+      <button class="btn btn-danger" id="confirm-ok">Xác Nhận</button>
+    </div>
+  </div>
+</div>
+
+
+<script src="../js/core.js"></script>
+<script>
+// ─── STATE ─────────────────────────────────────────────────
+var allProperties = [];
+var filteredProps  = [];
+var selectedIds   = new Set();
+var editingId     = null;
+var galleryImages = [];
+var avatarUrl     = '';
+var currentPage   = 1;
+var PAGE_SIZE     = 10;
+
+// ─── INIT ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  if (!Auth.requireAuth()) return;
+  var email = Auth.getEmail();
+  var emailEl = document.getElementById('user-email-display');
+  if (emailEl) emailEl.textContent = email;
+  var avEl = document.getElementById('user-avatar');
+  if (avEl) avEl.textContent = email.charAt(0).toUpperCase();
+  var leads = CMS.getLeads ? CMS.getLeads() : [];
+  var badge = document.getElementById('lead-count');
+  if (badge) badge.textContent = leads.length || 0;
+  setActiveNav();
+  loadData();
+  renderGalleryGrid();
+});
+
+// ─── DATA ──────────────────────────────────────────────────
+function loadData() {
+  allProperties = CMS.getProperties();
+  computeStats();
+  applyFilters();
+}
+function refreshData() { loadData(); showToast('Đã làm mới dữ liệu', 'info'); }
+
+function computeStats() {
+  document.getElementById('stat-total').textContent     = allProperties.length;
+  document.getElementById('stat-available').textContent = allProperties.filter(function(p){ return p.status==='available'; }).length;
+  document.getElementById('stat-sold').textContent      = allProperties.filter(function(p){ return p.status==='sold'; }).length;
+  document.getElementById('stat-featured').textContent  = allProperties.filter(function(p){ return p.is_featured; }).length;
+}
+
+// ─── FILTER / SORT ─────────────────────────────────────────
+function applyFilters() {
+  var q      = (document.getElementById('search-input').value || '').toLowerCase().trim();
+  var type   = document.getElementById('filter-type').value;
+  var area   = document.getElementById('filter-area').value;
+  var status = document.getElementById('filter-status').value;
+  var sv     = document.getElementById('sort-select').value || 'id-desc';
+
+  var results = allProperties.filter(function(p) {
+    return (!q      || (p.title||'').toLowerCase().indexOf(q)>-1 || (p.description||'').toLowerCase().indexOf(q)>-1)
+        && (!type   || p.type===type)
+        && (!area   || p.area===area)
+        && (!status || p.status===status);
+  });
+
+  var pts = sv.split('-'), sf = pts[0], sd = pts[1]||'desc';
+  results.sort(function(a,b){
+    var va = a[sf]!=null?a[sf]:'', vb = b[sf]!=null?b[sf]:'';
+    if (typeof va==='string') va=va.toLowerCase();
+    if (typeof vb==='string') vb=vb.toLowerCase();
+    return va<vb ? (sd==='asc'?-1:1) : va>vb ? (sd==='asc'?1:-1) : 0;
+  });
+
+  filteredProps = results;
+  currentPage = 1;
+  renderTable();
+}
+
+function sortBy(field) {
+  var sv = document.getElementById('sort-select').value || 'id-desc';
+  var pts = sv.split('-');
+  document.getElementById('sort-select').value = field + '-' + (pts[0]===field && pts[1]==='asc' ? 'desc' : 'asc');
+  applyFilters();
+}
+
+// ─── TABLE RENDER ──────────────────────────────────────────
+function renderTable() {
+  var tbody = document.getElementById('props-tbody');
+  var count = filteredProps.length;
+  var total = Math.ceil(count / PAGE_SIZE);
+  var start = (currentPage-1)*PAGE_SIZE;
+  var paged = filteredProps.slice(start, start+PAGE_SIZE);
+  document.getElementById('table-count').textContent = count>0 ? '('+count+' kết quả)' : '';
+
+  if (!count) {
+    tbody.innerHTML =
+      '<tr class="table-empty"><td colspan="10">' +
+      '<div class="empty-icon">🏠</div>' +
+      '<div class="empty-title">Không tìm thấy bất động sản nào</div>' +
+      '<div class="empty-desc">Thử thay đổi bộ lọc hoặc thêm BĐS mới</div>' +
+      '<button class="btn btn-gold btn-sm" onclick="openAddModal()" style="margin-top:12px;">➕ Thêm BĐS Mới</button>' +
+      '</td></tr>';
+    renderPagination(0,0,0); return;
+  }
+
+  tbody.innerHTML = paged.map(buildRow).join('');
+  renderPagination(count, currentPage, total);
+  paged.forEach(function(p){ var cb=document.getElementById('cb-'+p.id); if(cb) cb.checked=selectedIds.has(p.id); });
+  syncSelectAll();
+}
+
+function buildRow(p) {
+  var sh = p.status==='available'
+    ? '<span class="badge badge-green">● Đang bán</span>'
+    : p.status==='sold'
+      ? '<span class="badge badge-red">● Đã bán</span>'
+      : '<span class="badge" style="background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);">● Pending</span>';
+  var tp = buildTypePill(p.type);
+  var ih = p.image
+    ? '<img class="prop-thumb" src="'+escH(p.image)+'" alt="" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+      '<div class="prop-thumb-placeholder" style="display:none;">🏠</div>'
+    : '<div class="prop-thumb-placeholder">🏠</div>';
+  return '<tr id="row-'+p.id+'">' +
+    '<td class="th-checkbox"><input type="checkbox" class="row-checkbox" id="cb-'+p.id+'" onchange="toggleRowSelect('+p.id+',this.checked)"></td>' +
+    '<td class="td-image">'+ih+'</td>' +
+    '<td><div class="td-title">'+escH(p.title)+'</div>'+tp+'</td>' +
+    '<td><span style="font-size:0.82rem;">📍 '+escH(p.area||'—')+'</span></td>' +
+    '<td class="td-price">'+escH(p.price||'—')+'</td>' +
+    '<td class="td-area-cell">'+escH(p.area_size||'—')+'</td>' +
+    '<td>'+sh+'</td>' +
+    '<td style="text-align:center;"><span class="star-icon '+(p.is_featured?'on':'off')+'" onclick="toggleFeatured('+p.id+')" title="Nổi bật">'+(p.is_featured?'⭐':'☆')+'</span></td>' +
+    '<td style="text-align:center;"><label class="mini-toggle hot"><input type="checkbox" '+(p.is_hot?'checked':'')+' onchange="toggleHot('+p.id+',this.checked)"><span class="mini-toggle-slider"></span></label></td>' +
+    '<td><div style="display:flex;gap:5px;">' +
+      '<button class="action-btn edit" title="Sửa" onclick="openEditModal('+p.id+')">✏️</button>' +
+      '<button class="action-btn view" title="Xem" onclick="openViewModal('+p.id+')">👁</button>' +
+      '<button class="action-btn del"  title="Xóa" onclick="deleteProperty('+p.id+')">🗑️</button>' +
+    '</div></td></tr>';
+}
+
+function buildTypePill(type) {
+  var m={'shophouse':['type-shophouse','Shophouse'],'nha-pho':['type-nha-pho','Nhà Phố'],'dat-nen':['type-dat-nen','Đất Nền'],'can-ho':['type-can-ho','Căn Hộ'],'biet-thu':['type-biet-thu','Biệt Thự']};
+  var info=m[type]||['',type||''];
+  return '<span class="type-pill '+info[0]+'">'+info[1]+'</span>';
+}
+
+function renderPagination(count, page, total) {
+  var info=document.getElementById('pagi-info'), btns=document.getElementById('pagi-btns');
+  if (!info||!btns) return;
+  if (!count) { info.textContent=''; btns.innerHTML=''; return; }
+  var s=(page-1)*PAGE_SIZE+1, e=Math.min(page*PAGE_SIZE,count);
+  info.textContent='Hiển thị '+s+'–'+e+' / '+count+' kết quả';
+  var h='<button class="pagi-btn" onclick="goPage('+(page-1)+')" '+(page===1?'disabled':'')+'>‹</button>';
+  for (var i=1;i<=total;i++) {
+    if (total>7&&i>2&&i<total-1&&Math.abs(i-page)>1) { if(i===3||i===total-2) h+='<span class="pagi-btn" style="pointer-events:none">…</span>'; continue; }
+    h+='<button class="pagi-btn '+(i===page?'active':'')+'" onclick="goPage('+i+')">'+i+'</button>';
+  }
+  h+='<button class="pagi-btn" onclick="goPage('+(page+1)+')" '+(page===total?'disabled':'')+'>›</button>';
+  btns.innerHTML=h;
+}
+
+function goPage(p) {
+  var t=Math.ceil(filteredProps.length/PAGE_SIZE);
+  if (p<1||p>t) return;
+  currentPage=p; renderTable();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ─── INLINE TOGGLES ─────────────────────────────────────────
+function toggleHot(id, val) {
+  var props=CMS.getProperties(), p=props.find(function(x){return x.id===id;});
+  if (!p) return;
+  p.is_hot=val; CMS.saveProperties(props); allProperties=props; computeStats();
+  showToast(val?'🔥 Đã đánh dấu Hot':'Đã bỏ Hot','success');
+}
+
+function toggleFeatured(id) {
+  var props=CMS.getProperties(), p=props.find(function(x){return x.id===id;});
+  if (!p) return;
+  p.is_featured=!p.is_featured; CMS.saveProperties(props); allProperties=props;
+  computeStats(); applyFilters();
+  showToast(p.is_featured?'⭐ Đã đánh dấu Nổi Bật':'Đã bỏ Nổi Bật','success');
+}
+
+// ─── SELECTION ──────────────────────────────────────────────
+function toggleRowSelect(id, checked) {
+  if (checked) selectedIds.add(id); else selectedIds.delete(id);
+  syncSelectAll(); updateBulkBar();
+}
+function toggleSelectAll(cb) {
+  var s=(currentPage-1)*PAGE_SIZE, paged=filteredProps.slice(s,s+PAGE_SIZE);
+  paged.forEach(function(p){
+    if (cb.checked) selectedIds.add(p.id); else selectedIds.delete(p.id);
+    var rc=document.getElementById('cb-'+p.id); if(rc) rc.checked=cb.checked;
+  }); updateBulkBar();
+}
+function syncSelectAll() {
+  var s=(currentPage-1)*PAGE_SIZE, paged=filteredProps.slice(s,s+PAGE_SIZE);
+  var sa=document.getElementById('select-all');
+  if (sa) sa.checked=paged.length>0&&paged.every(function(p){return selectedIds.has(p.id);});
+}
+function clearSelection() {
+  selectedIds.clear();
+  document.querySelectorAll('.row-checkbox').forEach(function(cb){cb.checked=false;});
+  var sa=document.getElementById('select-all'); if(sa) sa.checked=false;
+  updateBulkBar();
+}
+function updateBulkBar() {
+  var bar=document.getElementById('bulk-bar'), cnt=document.getElementById('bulk-count');
+  if (cnt) cnt.textContent=selectedIds.size;
+  if (bar) bar.classList.toggle('visible',selectedIds.size>0);
+}
+
+// ─── BULK ACTIONS ───────────────────────────────────────────
+function bulkDelete() {
+  if (!selectedIds.size) return;
+  var n=selectedIds.size;
+  confirmAction('Xóa '+n+' bất động sản đã chọn?\nHành động này không thể hoàn tác.', function() {
+    var props=CMS.getProperties().filter(function(p){return !selectedIds.has(p.id);});
+    CMS.saveProperties(props); allProperties=props;
+    selectedIds.clear(); updateBulkBar(); computeStats(); applyFilters();
+    showToast('🗑️ Đã xóa '+n+' BĐS','success');
+  });
+}
+function bulkChangeStatus() { if (!selectedIds.size) return; openModal('bulk-status-modal'); }
+function applyBulkStatus() {
+  var ns=document.getElementById('bulk-status-val').value;
+  var props=CMS.getProperties().map(function(p){ return selectedIds.has(p.id)?Object.assign({},p,{status:ns}):p; });
+  CMS.saveProperties(props); allProperties=props;
+  closeModal('bulk-status-modal'); clearSelection(); computeStats(); applyFilters();
+  showToast('✅ Đã cập nhật trạng thái','success');
+}
+function bulkFeature() {
+  if (!selectedIds.size) return;
+  var props=CMS.getProperties().map(function(p){ return selectedIds.has(p.id)?Object.assign({},p,{is_featured:true}):p; });
+  CMS.saveProperties(props); allProperties=props;
+  clearSelection(); computeStats(); applyFilters();
+  showToast('⭐ Đã đánh dấu Nổi Bật','success');
+}
+
+// ─── ADD / EDIT MODAL ──────────────────────────────────────
+function openAddModal() {
+  editingId=null;
+  document.getElementById('modal-title-text').textContent='Thêm BĐS Mới';
+  document.getElementById('modal-icon').textContent='➕';
+  document.getElementById('save-btn').textContent='💾 Lưu BĐS';
+  resetForm(); openModal('prop-modal');
+}
+function openEditModal(id) {
+  var props=CMS.getProperties(), p=props.find(function(x){return x.id===id;});
+  if (!p) return;
+  editingId=id;
+  document.getElementById('modal-title-text').textContent='Chỉnh Sửa BĐS';
+  document.getElementById('modal-icon').textContent='✏️';
+  document.getElementById('save-btn').textContent='💾 Cập Nhật BĐS';
+  resetForm(); fillForm(p); openModal('prop-modal');
+}
+function resetForm() {
+  document.getElementById('prop-form').reset();
+  document.getElementById('form-id').value='';
+  avatarUrl=''; galleryImages=[];
+  document.getElementById('avatar-preview-container').innerHTML='';
+  document.getElementById('f-image').value='';
+  renderGalleryGrid(); clearFormErrors();
+}
+function fillForm(p) {
+  document.getElementById('form-id').value     =p.id;
+  document.getElementById('f-title').value     =p.title||'';
+  document.getElementById('f-type').value      =p.type||'';
+  document.getElementById('f-area').value      =p.area||'';
+  document.getElementById('f-price').value     =p.price||'';
+  document.getElementById('f-area-size').value =p.area_size||'';
+  document.getElementById('f-frontage').value  =p.frontage||'';
+  document.getElementById('f-direction').value =p.direction||'';
+  document.getElementById('f-floors').value    =p.floors||'';
+  document.getElementById('f-legal').value     =p.legal||'';
+  document.getElementById('f-status').value    =p.status||'available';
+  document.getElementById('f-video').value     =p.video_url||'';
+  document.getElementById('f-desc').value      =p.description||'';
+  document.getElementById('f-featured').checked=!!p.is_featured;
+  document.getElementById('f-hot').checked     =!!p.is_hot;
+  if (p.image) { avatarUrl=p.image; document.getElementById('f-image').value=p.image; showAvatarPreview(p.image); }
+  if (p.gallery&&Array.isArray(p.gallery)&&p.gallery.length) {
+    galleryImages=p.gallery.map(function(u){return{url:u,name:u.split('/').pop()};});
+    renderGalleryGrid();
+  }
+}
+
+// ─── FORM SUBMIT ────────────────────────────────────────────
+function handleFormSubmit(e) {
+  if (e&&e.preventDefault) e.preventDefault();
+  if (!validateForm()) return;
+  var btn=document.getElementById('save-btn');
+  btn.classList.add('btn-loading'); btn.disabled=true;
+  var data=collectFormData();
+  setTimeout(function(){
+    try {
+      var props=CMS.getProperties();
+      if (editingId!==null) {
+        var idx=-1;
+        for (var i=0;i<props.length;i++){if(props[i].id===editingId){idx=i;break;}}
+        if (idx>-1) props[idx]=Object.assign({},props[idx],data,{id:editingId});
+        showToast('✅ Đã cập nhật bất động sản!','success');
+      } else {
+        var ids=props.map(function(p){return p.id||0;});
+        var newId=ids.length?Math.max.apply(null,ids)+1:1;
+        props.unshift(Object.assign({id:newId},data));
+        showToast('✅ Đã thêm bất động sản mới!','success');
+      }
+      CMS.saveProperties(props); allProperties=props;
+      closeModal('prop-modal'); computeStats(); applyFilters();
+    } catch(err){ showToast('❌ Lỗi: '+err.message,'error'); }
+    finally { btn.classList.remove('btn-loading'); btn.disabled=false; }
+  }, 380);
+}
+
+function collectFormData() {
+  return {
+    title:       document.getElementById('f-title').value.trim(),
+    type:        document.getElementById('f-type').value,
+    area:        document.getElementById('f-area').value,
+    price:       document.getElementById('f-price').value.trim(),
+    area_size:   document.getElementById('f-area-size').value.trim(),
+    frontage:    document.getElementById('f-frontage').value.trim(),
+    direction:   document.getElementById('f-direction').value,
+    floors:      parseInt(document.getElementById('f-floors').value)||null,
+    legal:       document.getElementById('f-legal').value,
+    status:      document.getElementById('f-status').value,
+    video_url:   document.getElementById('f-video').value.trim(),
+    description: document.getElementById('f-desc').value.trim(),
+    image:       document.getElementById('f-image').value||avatarUrl,
+    gallery:     galleryImages.map(function(g){return g.url;}),
+    is_featured: document.getElementById('f-featured').checked,
+    is_hot:      document.getElementById('f-hot').checked,
+    updated_at:  new Date().toISOString()
+  };
+}
+
+// ─── VALIDATION ─────────────────────────────────────────────
+function validateForm() {
+  clearFormErrors(); var ok=true;
+  var title=document.getElementById('f-title').value.trim();
+  if (!title)       { showFE('err-title','f-title','Vui lòng nhập tiêu đề BĐS'); ok=false; }
+  else if (title.length<5) { showFE('err-title','f-title','Tiêu đề quá ngắn (tối thiểu 5 ký tự)'); ok=false; }
+  if (!document.getElementById('f-type').value)  { showFE('err-type','f-type','Vui lòng chọn loại hình BĐS'); ok=false; }
+  if (!document.getElementById('f-area').value)  { showFE('err-area','f-area','Vui lòng chọn khu vực'); ok=false; }
+  if (!document.getElementById('f-price').value.trim()) { showFE('err-price','f-price','Vui lòng nhập giá'); ok=false; }
+  return ok;
+}
+function showFE(eId, fId, msg) {
+  var e=document.getElementById(eId); if(e){e.textContent=msg;e.style.display='block';}
+  var f=document.getElementById(fId); if(f) f.style.borderColor='var(--danger)';
+}
+function clearFormErrors() {
+  ['err-title','err-type','err-area','err-price'].forEach(function(id){
+    var el=document.getElementById(id); if(el){el.style.display='none';el.textContent='';}
+  });
+  document.querySelectorAll('#prop-form .form-control').forEach(function(el){el.style.borderColor='';});
+}
+
+// ─── DELETE ─────────────────────────────────────────────────
+function deleteProperty(id) {
+  var props=CMS.getProperties(), p=props.find(function(x){return x.id===id;});
+  if (!p) return;
+  confirmAction('Xóa bất động sản:\n"'+p.title+'"?\n\nHành động này không thể hoàn tác.', function(){
+    var upd=props.filter(function(x){return x.id!==id;});
+    CMS.saveProperties(upd); allProperties=upd;
+    selectedIds.delete(id); updateBulkBar(); computeStats(); applyFilters();
+    showToast('🗑️ Đã xóa bất động sản','success');
+  });
+}
+
+// ─── VIEW DETAIL ────────────────────────────────────────────
+function openViewModal(id) {
+  var props=CMS.getProperties(), p=props.find(function(x){return x.id===id;});
+  if (!p) return;
+
+  var sLabel={available:'Đang bán',sold:'Đã bán',pending:'Pending'}[p.status]||p.status;
+  var sCls={available:'badge-green',sold:'badge-red'}[p.status]||'';
+  var sSty=p.status==='pending'?' style="background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);"':'';
+  var tMap={'shophouse':'Shophouse','nha-pho':'Nhà Phố','dat-nen':'Đất Nền','can-ho':'Căn Hộ','biet-thu':'Biệt Thự'};
+
+  var heroH=p.image
+    ?'<img class="detail-hero-img" src="'+escH(p.image)+'" alt="" onerror="this.style.display=\'none\'">'
+    :'<div style="height:140px;border-radius:var(--radius);background:var(--bg-card);display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:8px;">🏠</div>';
+
+  var galH='';
+  if (p.gallery&&p.gallery.length) {
+    galH='<div class="detail-gallery-strip">'+p.gallery.map(function(u){return'<img src="'+escH(u)+'" alt="" onerror="this.style.display=\'none\'">';}).join('')+'</div>';
+  }
+
+  var vidH=p.video_url
+    ?'<div class="detail-item" style="grid-column:1/-1;"><label>Video YouTube</label><a href="'+escH(p.video_url)+'" target="_blank" rel="noopener" class="detail-val" style="color:var(--gold);word-break:break-all;">'+escH(p.video_url)+'</a></div>'
+    :'';
+
+  var upd=p.updated_at?' · Cập nhật: <strong style="color:var(--text-2);">'+new Date(p.updated_at).toLocaleString('vi-VN')+'</strong>':'';
+
+  var html=heroH+galH+
+    '<div class="detail-section-title">Thông Tin Chung</div>'+
+    '<div class="detail-grid">'+
+    '<div class="detail-item" style="grid-column:1/-1;"><label>Tiêu Đề</label><div class="detail-val" style="font-size:1.05rem;font-weight:700;">'+escH(p.title)+'</div></div>'+
+    '<div class="detail-item"><label>Loại Hình</label><div class="detail-val">'+(tMap[p.type]||p.type||'—')+'</div></div>'+
+    '<div class="detail-item"><label>Khu Vực</label><div class="detail-val">📍 '+escH(p.area||'—')+'</div></div>'+
+    '<div class="detail-item"><label>Giá</label><div class="detail-val" style="color:var(--gold);font-weight:700;font-size:1.1rem;">'+escH(p.price||'—')+'</div></div>'+
+    '<div class="detail-item"><label>Diện Tích</label><div class="detail-val">'+escH(p.area_size||'—')+'</div></div>'+
+    '<div class="detail-item"><label>Mặt Tiền</label><div class="detail-val">'+escH(p.frontage||'—')+'</div></div>'+
+    '<div class="detail-item"><label>Hướng</label><div class="detail-val">'+escH(p.direction||'—')+'</div></div>'+
+    '<div class="detail-item"><label>Số Tầng</label><div class="detail-val">'+(p.floors?p.floors+' tầng':'—')+'</div></div>'+
+    '<div class="detail-item"><label>Pháp Lý</label><div class="detail-val">'+escH(p.legal||'—')+'</div></div>'+
+    '<div class="detail-item"><label>Trạng Thái</label><div class="detail-badges">'+
+      '<span class="badge '+sCls+'"'+sSty+'>'+sLabel+'</span>'+
+      (p.is_featured?'<span class="badge badge-gold">⭐ Nổi Bật</span>':'')+
+      (p.is_hot?'<span class="badge badge-hot">🔥 Hot</span>':'')+
+    '</div></div>'+vidH+'</div>'+
+    (p.description?'<div class="detail-section-title">Mô Tả</div><div class="detail-desc">'+escH(p.description)+'</div>':'')+
+    '<div class="detail-section-title" style="margin-top:16px;font-size:0.66rem;">Metadata</div>'+
+    '<div style="font-size:0.78rem;color:var(--text-3);">ID: <strong style="color:var(--text-2);">#'+p.id+'</strong>'+upd+'</div>';
+
+  document.getElementById('view-modal-body').innerHTML=html;
+  document.getElementById('view-edit-btn').onclick=function(){ closeModal('view-modal'); openEditModal(id); };
+  openModal('view-modal');
+}
+
+// ─── IMAGE UPLOAD ──────────────────────────────────────────
+function handleAvatarUpload(e) {
+  var file=e.target.files[0]; if(!file) return;
+  if (file.size>5*1024*1024) { showToast('Ảnh quá lớn (tối đa 5MB)','warning'); return; }
+  showToast('Đang tải ảnh...','info');
+  Uploader.uploadToSupabase(file).then(function(url){
+    avatarUrl=url; document.getElementById('f-image').value=url; showAvatarPreview(url);
+    showToast('✅ Đã tải ảnh đại diện','success');
+  }).catch(function(err){ showToast('Lỗi tải ảnh: '+err.message,'error'); });
+}
+function showAvatarPreview(url) {
+  document.getElementById('avatar-preview-container').innerHTML=
+    '<div class="avatar-preview-wrap"><img src="'+escH(url)+'" alt="preview"><button type="button" class="avatar-preview-remove" onclick="removeAvatar()">✕</button></div>';
+}
+function removeAvatar() {
+  avatarUrl=''; document.getElementById('f-image').value='';
+  document.getElementById('avatar-preview-container').innerHTML='';
+  document.getElementById('avatar-file').value='';
+}
+
+function handleGalleryUpload(e) {
+  var files=Array.from(e.target.files);
+  if (galleryImages.length+files.length>10) { showToast('Tối đa 10 ảnh trong thư viện','warning'); e.target.value=''; return; }
+  showToast('Đang tải '+files.length+' ảnh...','info');
+  var proms=files.map(function(f){
+    if (f.size>5*1024*1024) { showToast(f.name+' quá lớn, bỏ qua','warning'); return Promise.resolve(null); }
+    return Uploader.uploadToSupabase(f).then(function(url){return{url:url,name:f.name};});
+  });
+  Promise.all(proms).then(function(results){
+    var added=0; results.forEach(function(r){if(r){galleryImages.push(r);added++;}});
+    renderGalleryGrid(); showToast('✅ Đã tải '+added+' ảnh','success');
+  }).catch(function(err){showToast('Lỗi: '+err.message,'error');});
+  e.target.value='';
+}
+function removeGalleryImage(idx) { galleryImages.splice(idx,1); renderGalleryGrid(); }
+function renderGalleryGrid() {
+  var grid=document.getElementById('gallery-grid'); if(!grid) return;
+  var items=galleryImages.map(function(g,i){
+    return '<div class="gallery-item"><img src="'+escH(g.url)+'" alt="" onerror="this.style.opacity=\'0.3\'">'+
+      '<button type="button" class="gallery-remove" onclick="removeGalleryImage('+i+')">✕</button></div>';
+  }).join('');
+  var addBtn=galleryImages.length<10
+    ?'<button type="button" class="gallery-add" onclick="document.getElementById(\'gallery-file\').click()"><span class="gallery-add-icon">➕</span><span>Thêm ảnh</span></button>'
+    :'';
+  grid.innerHTML=items+addBtn;
+}
+
+// ─── DRAG & DROP ────────────────────────────────────────────
+function handleDragOver(e, zoneId) {
+  e.preventDefault(); var z=document.getElementById(zoneId); if(z) z.classList.add('drag-over');
+}
+function handleDragLeave(zoneId) {
+  var z=document.getElementById(zoneId); if(z) z.classList.remove('drag-over');
+}
+function handleAvatarDrop(e) {
+  e.preventDefault(); handleDragLeave('avatar-zone');
+  var file=e.dataTransfer.files[0];
+  if(!file||!file.type.startsWith('image/')) { showToast('Vui lòng chọn file ảnh','warning'); return; }
+  handleAvatarUpload({target:{files:[file]}});
+}
+
+// ─── MODAL / SIDEBAR ────────────────────────────────────────
+function handleOverlayClick(e, mid) { if(e.target.id===mid) closeModal(mid); }
+function toggleSidebar() { var sb=document.getElementById('sidebar'); if(sb) sb.classList.toggle('open'); }
+
+// ─── UTILS ──────────────────────────────────────────────────
+function escH(str) {
+  if (str==null) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+</script>
+</body>
+</html>
