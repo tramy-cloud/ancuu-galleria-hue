@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#141728" />
+  <title>Admin Login – An Cựu Galleria Huế</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./admin.css" />
+  <style>
+    /* ═══════════════════════════════════════════════
+       AN CỰU GALLERIA – ADMIN LOGIN  ·  Premium Dark
+       ═══════════════════════════════════════════════ */
+
+    /* Canvas particle layer */
+    #particle-canvas {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* Glow orbs */
+    .glow-orb {
+      position: fixed; border-radius: 50%;
+      filter: blur(90px); pointer-events: none; z-index: 0;
+      animation: orbFloat 14s ease-in-out infinite;
+    }
+    .glow-orb-1 {
+      width: 560px; height: 560px;
+      background: radial-gradient(circle, rgba(212,175,55,0.11) 0%, transparent 70%);
+      top: -140px; left: -120px; animation-delay: 0s;
+    }
+    .glow-orb-2 {
+      width: 440px; height: 440px;
+      background: radial-gradient(circle, rgba(59,130,246,0.07) 0%, transparent 70%);
+      bottom: -100px; right: -100px; animation-delay: -6s;
+    }
+    .glow-orb-3 {
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(212,175,55,0.05) 0%, transparent 70%);
+      top: 40%; right: 10%; animation-delay: -10s;
+    }
+    @keyframes orbFloat {
+      0%,100% { transform: translateY(0) scale(1); }
+      33%      { transform: translateY(-30px) scale(1.05); }
+      66%      { transform: translateY(20px) scale(0.96); }
+    }
+
+    /* Animated grid */
+    .login-grid-bg {
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(212,175,55,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(212,175,55,0.03) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, black 30%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, black 30%, transparent 100%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* Scan line */
+    .scan-line {
+      position: fixed; top: -2px; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent 0%, rgba(212,175,55,0.5) 50%, transparent 100%);
+      animation: scanDown 9s linear infinite;
+      pointer-events: none; z-index: 1; opacity: 0.4;
+    }
+    @keyframes scanDown { 0% { top: -2px; } 100% { top: 100vh; } }
+
+    /* Scene wrapper — centres card */
+    .login-scene {
+      position: relative; z-index: 2;
+      width: 100%; max-width: 480px;
+      padding: 28px 16px; margin: 0 auto;
+    }
+
+    /* ── LOGIN CARD ────────────────────────────── */
+    .login-card {
+      background: rgba(28,33,57,0.93);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid rgba(212,175,55,0.17);
+      border-radius: 24px;
+      padding: 52px 44px 44px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.035) inset,
+        0 8px 64px rgba(0,0,0,0.55),
+        0 0 100px rgba(212,175,55,0.05);
+      position: relative; overflow: hidden;
+      animation: cardIn 0.75s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(40px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Gold top line */
+    .login-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(212,175,55,0.45) 15%,
+        #D4AF37 50%,
+        rgba(212,175,55,0.45) 85%,
+        transparent 100%
+      );
+    }
+    /* Inner top-left glow */
+    .login-card::after {
+      content: ''; position: absolute; top: -70px; left: -70px;
+      width: 250px; height: 250px;
+      background: radial-gradient(circle, rgba(212,175,55,0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Shake animation on error */
+    @keyframes cardShake {
+      0%,100% { transform: translateX(0); }
+      14%      { transform: translateX(-11px); }
+      28%      { transform: translateX(11px); }
+      43%      { transform: translateX(-8px); }
+      57%      { transform: translateX(8px); }
+      71%      { transform: translateX(-4px); }
+      86%      { transform: translateX(4px); }
+    }
+    .login-card.shake { animation: cardShake 0.56s cubic-bezier(0.36,0.07,0.19,0.97) both; }
+
+    /* ── LOGO ──────────────────────────────────── */
+    .login-logo { display: flex; align-items: center; gap: 16px; margin-bottom: 36px; }
+    .login-logo-icon {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #D4AF37 0%, #F5D77A 100%);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.8rem; font-weight: 800; color: #141728;
+      flex-shrink: 0;
+      box-shadow: 0 4px 22px rgba(212,175,55,0.38), 0 0 0 1px rgba(212,175,55,0.42);
+      animation: iconGlow 3s ease-in-out infinite;
+    }
+    @keyframes iconGlow {
+      0%,100% { box-shadow: 0 4px 22px rgba(212,175,55,0.38), 0 0 0 1px rgba(212,175,55,0.42); }
+      50%      { box-shadow: 0 6px 36px rgba(212,175,55,0.6), 0 0 0 5px rgba(212,175,55,0.12); }
+    }
+    .login-logo-text { display: flex; flex-direction: column; gap: 5px; }
+    .login-logo-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.05rem; font-weight: 700;
+      color: #F0F2FF; letter-spacing: 0.01em; line-height: 1.2;
+    }
+    .login-logo-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(212,175,55,0.11); border: 1px solid rgba(212,175,55,0.24);
+      border-radius: 99px; padding: 3px 11px;
+      font-size: 0.63rem; font-weight: 700;
+      letter-spacing: 0.13em; text-transform: uppercase; color: #D4AF37;
+      width: fit-content;
+    }
+    .login-logo-badge::before {
+      content: ''; width: 5px; height: 5px;
+      background: #D4AF37; border-radius: 50%;
+      animation: dotPulse 2.2s ease-in-out infinite;
+    }
+    @keyframes dotPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+
+    /* ── HEADING ───────────────────────────────── */
+    .login-heading {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.8rem; font-weight: 700;
+      color: #F0F2FF; letter-spacing: -0.02em; line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .login-subtext {
+      font-size: 0.875rem; color: rgba(240,242,255,0.68);
+      margin-bottom: 36px; line-height: 1.55;
+    }
+
+    /* ── ERROR BOX ─────────────────────────────── */
+    .login-error {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 12px 16px;
+      background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.22);
+      border-radius: 10px; color: #fca5a5; font-size: 0.85rem;
+      margin-bottom: 20px;
+      opacity: 0; transform: translateY(-8px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+    }
+    .login-error.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .login-error-icon { flex-shrink: 0; color: #ef4444; line-height: 1; margin-top: 1px; }
+
+    /* ── FORM CONTROLS ─────────────────────────── */
+    .form-group { margin-bottom: 22px; }
+    .form-label {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.73rem; font-weight: 600;
+      color: rgba(240,242,255,0.62);
+      margin-bottom: 9px; letter-spacing: 0.07em; text-transform: uppercase;
+    }
+    .input-wrapper { position: relative; }
+    .input-icon {
+      position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+      color: rgba(240,242,255,0.28); pointer-events: none;
+      display: flex; align-items: center;
+      transition: color 0.22s ease;
+    }
+    .input-wrapper:focus-within .input-icon { color: #D4AF37; }
+    .form-control {
+      width: 100%; padding: 13px 16px 13px 47px;
+      background: rgba(18,21,38,0.75);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px; color: #F0F2FF;
+      font-size: 0.9rem; font-family: 'Inter', sans-serif;
+      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+      outline: none; letter-spacing: 0.01em;
+    }
+    .form-control:focus {
+      border-color: rgba(212,175,55,0.58);
+      background: rgba(14,17,32,0.9);
+      box-shadow: 0 0 0 3px rgba(212,175,55,0.11), 0 2px 10px rgba(0,0,0,0.25);
+    }
+    .form-control::placeholder { color: rgba(240,242,255,0.22); }
+    .form-control.has-eye { padding-right: 48px; }
+    .form-control.error {
+      border-color: rgba(239,68,68,0.52);
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.09);
+    }
+
+    /* Eye toggle button */
+    .input-eye-btn {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: rgba(240,242,255,0.28);
+      cursor: pointer; padding: 5px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 6px; transition: color 0.2s, background 0.2s;
+    }
+    .input-eye-btn:hover { color: #D4AF37; background: rgba(212,175,55,0.08); }
+
+    /* ── REMEMBER / FORGOT ─────────────────────── */
+    .remember-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .remember-label {
+      display: flex; align-items: center; gap: 10px;
+      cursor: pointer; font-size: 0.875rem;
+      color: rgba(240,242,255,0.68); user-select: none;
+    }
+    .remember-label input[type="checkbox"] {
+      appearance: none; -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border: 1.5px solid rgba(212,175,55,0.34);
+      border-radius: 5px; background: rgba(18,21,38,0.7);
+      cursor: pointer; position: relative; flex-shrink: 0;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .remember-label input[type="checkbox"]:focus-visible {
+      outline: none; box-shadow: 0 0 0 3px rgba(212,175,55,0.2);
+    }
+    .remember-label input[type="checkbox"]:checked {
+      background: linear-gradient(135deg, #D4AF37, #F5D77A);
+      border-color: #D4AF37;
+    }
+    .remember-label input[type="checkbox"]:checked::after {
+      content: ''; position: absolute; top: 2px; left: 5px;
+      width: 5px; height: 9px;
+      border: 2px solid #141728; border-top: none; border-left: none;
+      transform: rotate(45deg);
+    }
+    .forgot-link {
+      font-size: 0.8rem; color: rgba(240,242,255,0.35); font-weight: 500;
+      cursor: pointer; background: none; border: none;
+      padding: 0; font-family: 'Inter', sans-serif;
+      transition: color 0.2s;
+    }
+    .forgot-link:hover { color: #D4AF37; }
+
+    /* ── SUBMIT BUTTON ─────────────────────────── */
+    .btn-login {
+      width: 100%; padding: 15px 24px;
+      background: linear-gradient(135deg, #C9A227 0%, #D4AF37 35%, #F5D77A 65%, #e8c840 100%);
+      color: #141728; font-weight: 700; font-size: 0.97rem;
+      font-family: 'Inter', sans-serif; letter-spacing: 0.04em;
+      border: none; border-radius: 10px; cursor: pointer;
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 22px rgba(212,175,55,0.38), 0 1px 0 rgba(255,255,255,0.28) inset;
+    }
+    .btn-login:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 34px rgba(212,175,55,0.52), 0 1px 0 rgba(255,255,255,0.28) inset;
+    }
+    .btn-login:active:not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 2px 14px rgba(212,175,55,0.3);
+    }
+    .btn-login:disabled { cursor: not-allowed; opacity: 0.82; }
+
+    /* Shimmer sweep */
+    .btn-shimmer {
+      position: absolute; top: 0; left: -100%; width: 55%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transform: skewX(-22deg);
+      animation: btnShimmer 3.4s ease-in-out infinite;
+    }
+    @keyframes btnShimmer {
+      0%   { left: -100%; }
+      45%  { left: 160%; }
+      100% { left: 160%; }
+    }
+
+    /* Spinner inside button */
+    .btn-spinner {
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(20,23,40,0.2); border-top-color: #141728;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      flex-shrink: 0;
+    }
+    .btn-label { position: relative; display: flex; align-items: center; gap: 8px; }
+
+    /* ── SECURITY NOTICE ───────────────────────── */
+    .login-divider { height: 1px; background: rgba(255,255,255,0.055); margin: 26px 0; }
+
+    .security-notice {
+      display: flex; align-items: flex-start; gap: 11px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.018);
+      border: 1px solid rgba(255,255,255,0.055);
+      border-radius: 10px;
+    }
+    .security-icon { font-size: 0.95rem; flex-shrink: 0; opacity: 0.42; margin-top: 1px; }
+    .security-text { font-size: 0.78rem; color: rgba(240,242,255,0.36); line-height: 1.55; }
+    .security-text strong { color: rgba(240,242,255,0.58); font-weight: 600; }
+
+    /* ── FOOTER ────────────────────────────────── */
+    .login-footer {
+      text-align: center; margin-top: 28px;
+      font-size: 0.77rem; color: rgba(240,242,255,0.25);
+    }
+    .login-footer a { color: #D4AF37; opacity: 0.72; transition: opacity 0.2s; }
+    .login-footer a:hover { opacity: 1; }
+
+    /* Version badge */
+    .version-tag {
+      position: fixed; bottom: 18px; right: 22px;
+      font-size: 0.67rem; color: rgba(240,242,255,0.16);
+      letter-spacing: 0.07em; font-family: 'Inter', monospace; z-index: 10;
+    }
+
+    /* Responsive */
+    @media (max-width: 520px) {
+      .login-card { padding: 36px 22px 30px; }
+      .login-heading { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body class="login-page">
+
+  <!-- ── Particle canvas ── -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- ── Glow orbs ── -->
+  <div class="glow-orb glow-orb-1"></div>
+  <div class="glow-orb glow-orb-2"></div>
+  <div class="glow-orb glow-orb-3"></div>
+
+  <!-- ── Animated grid ── -->
+  <div class="login-grid-bg"></div>
+
+  <!-- ── Scan line ── -->
+  <div class="scan-line"></div>
+
+  <!-- ════════════════════════════════════════
+       MAIN LOGIN SCENE
+       ════════════════════════════════════════ -->
+  <div class="login-scene">
+    <div class="login-card" id="loginCard">
+
+      <!-- LOGO -->
+      <div class="login-logo">
+        <div class="login-logo-icon">A</div>
+        <div class="login-logo-text">
+          <span class="login-logo-name">An Cựu Galleria</span>
+          <span class="login-logo-badge">Admin Panel</span>
+        </div>
+      </div>
+
+      <!-- HEADING -->
+      <h1 class="login-heading">Đăng Nhập Quản Trị</h1>
+      <p class="login-subtext">Hệ thống quản lý nội dung An Cựu Galleria Huế</p>
+
+      <!-- ERROR ALERT -->
+      <div class="login-error" id="loginError" role="alert" aria-live="assertive">
+        <span class="login-error-icon">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M10 6v5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="10" cy="14.5" r="0.85" fill="currentColor"/>
+          </svg>
+        </span>
+        <span id="loginErrorText"></span>
+      </div>
+
+      <!-- FORM -->
+      <form id="loginForm" novalidate autocomplete="on">
+
+        <!-- Email -->
+        <div class="form-group">
+          <label class="form-label" for="emailInput">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.35"/>
+              <path d="M1 6.5l6.47 4a1 1 0 001.06 0L15 6.5" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
+            </svg>
+            Địa chỉ Email
+          </label>
+          <div class="input-wrapper">
+            <span class="input-icon" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="4" width="16" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M2 7.5l7.47 5a1 1 0 001.06 0L18 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <input
+              type="email"
+              id="emailInput"
+              name="email"
+              class="form-control"
+              placeholder="email@example.com"
+              value="tramy.minhvi@gmail.com"
+              autocomplete="email"
+              required
+              aria-required="true"
+              aria-describedby="loginError"
+            />
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label class="form-label" for="passwordInput">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="7" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.35"/>
+              <path d="M5.5 7V5a2.5 2.5 0 015 0v2" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
+            </svg>
+            Mật Khẩu
+          </label>
+          <div class="input-wrapper">
+            <span class="input-icon" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4" y="9" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M7 9V6.5a3 3 0 016 0V9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                <circle cx="10" cy="13.5" r="1.2" fill="currentColor"/>
+              </svg>
+            </span>
+            <input
+              type="password"
+              id="passwordInput"
+              name="password"
+              class="form-control has-eye"
+              placeholder="••••••••••"
+              autocomplete="current-password"
+              required
+              aria-required="true"
+            />
+            <!-- Eye toggle -->
+            <button
+              type="button"
+              class="input-eye-btn"
+              id="eyeToggle"
+              aria-label="Hiện mật khẩu"
+              title="Hiện / Ẩn mật khẩu"
+            >
+              <!-- Eye open icon -->
+              <svg id="eyeOpen" width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1.5 10C1.5 10 4.5 4 10 4s8.5 6 8.5 6-3 6-8.5 6S1.5 10 1.5 10z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              <!-- Eye closed icon -->
+              <svg id="eyeClosed" width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none">
+                <path d="M3 3l14 14M8.6 8.6A2.5 2.5 0 0112.4 12.4M1.5 10s2.5-4.5 7.5-5.8M18.5 10s-2.5 4.5-7.5 5.8M13 4.8A9 9 0 0110 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Remember + Forgot -->
+        <div class="remember-row">
+          <label class="remember-label">
+            <input type="checkbox" id="rememberMe" name="remember" />
+            <span>Ghi nhớ đăng nhập</span>
+          </label>
+          <button type="button" class="forgot-link" tabindex="0" aria-label="Quên mật khẩu">
+            Quên mật khẩu?
+          </button>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-login" id="loginBtn" aria-label="Đăng nhập vào hệ thống quản trị">
+          <div class="btn-shimmer" aria-hidden="true"></div>
+          <span class="btn-label" id="btnLabel">
+            <span aria-hidden="true" style="font-size:1.05rem;">🔐</span>
+            <span>Đăng Nhập</span>
+          </span>
+        </button>
+
+      </form>
+
+      <div class="login-divider" role="separator"></div>
+
+      <!-- Security notice -->
+      <div class="security-notice" role="note" aria-label="Thông báo bảo mật">
+        <span class="security-icon" aria-hidden="true">🔒</span>
+        <p class="security-text">
+          <strong>Khu vực riêng tư.</strong>
+          Chỉ quản trị viên được phép truy cập.
+          Mọi hoạt động đăng nhập đều được ghi lại.
+        </p>
+      </div>
+
+    </div><!-- /.login-card -->
+
+    <!-- Footer -->
+    <p class="login-footer">
+      © 2025 <a href="/" target="_blank" rel="noopener">An Cựu Galleria Huế</a>. All rights reserved.
+    </p>
+
+  </div><!-- /.login-scene -->
+
+  <!-- Version tag -->
+  <div class="version-tag" aria-hidden="true">v2.0.0 · ACG Admin</div>
+
+  <!-- ════════════════════════════════════════
+       SCRIPTS
+       ════════════════════════════════════════ -->
+  <script src="./js/core.js"></script>
+
+  <script>
+    /* ════════════════════════════════════════════════════════
+       LOGIN CONTROLLER
+       ════════════════════════════════════════════════════════ */
+    (function () {
+      'use strict';
+
+      /* Guard: if already logged in, skip to dashboard */
+      if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+        window.location.replace('./pages/dashboard.html');
+        return;
+      }
+
+      /* DOM refs */
+      const form       = document.getElementById('loginForm');
+      const emailEl    = document.getElementById('emailInput');
+      const passEl     = document.getElementById('passwordInput');
+      const loginBtn   = document.getElementById('loginBtn');
+      const btnLabel   = document.getElementById('btnLabel');
+      const errorBox   = document.getElementById('loginError');
+      const errorText  = document.getElementById('loginErrorText');
+      const loginCard  = document.getElementById('loginCard');
+      const eyeToggle  = document.getElementById('eyeToggle');
+      const eyeOpen    = document.getElementById('eyeOpen');
+      const eyeClosed  = document.getElementById('eyeClosed');
+      const rememberMe = document.getElementById('rememberMe');
+
+      /* ── Eye toggle ─────────────────────────── */
+      let pwVisible = false;
+      eyeToggle.addEventListener('click', () => {
+        pwVisible = !pwVisible;
+        passEl.type = pwVisible ? 'text' : 'password';
+        eyeOpen.style.display   = pwVisible ? 'none'  : 'block';
+        eyeClosed.style.display = pwVisible ? 'block' : 'none';
+        eyeToggle.setAttribute('aria-label', pwVisible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+        passEl.focus();
+      });
+
+      /* ── Error helpers ──────────────────────── */
+      function showError(msg) {
+        errorText.textContent = msg;
+        errorBox.classList.add('visible');
+        passEl.classList.add('error');
+        emailEl.classList.add('error');
+        /* Trigger shake */
+        loginCard.classList.remove('shake');
+        void loginCard.offsetWidth; /* reflow */
+        loginCard.classList.add('shake');
+        loginCard.addEventListener('animationend', () => {
+          loginCard.classList.remove('shake');
+        }, { once: true });
+      }
+
+      function clearError() {
+        errorBox.classList.remove('visible');
+        passEl.classList.remove('error');
+        emailEl.classList.remove('error');
+      }
+
+      emailEl.addEventListener('input', clearError);
+      passEl.addEventListener('input',  clearError);
+
+      /* ── Loading state ──────────────────────── */
+      function setLoading(on) {
+        loginBtn.disabled = on;
+        btnLabel.innerHTML = on
+          ? '<span class="btn-spinner"></span><span>Đang xác thực...</span>'
+          : '<span aria-hidden="true" style="font-size:1.05rem;">🔐</span><span>Đăng Nhập</span>';
+      }
+
+      /* ── Main login handler ─────────────────── */
+      async function handleLogin(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        clearError();
+
+        const email    = emailEl.value.trim();
+        const password = passEl.value;
+
+        /* Validation */
+        if (!email) {
+          showError('Vui lòng nhập địa chỉ email.'); emailEl.focus(); return;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          showError('Địa chỉ email không hợp lệ.'); emailEl.focus(); return;
+        }
+        if (!password) {
+          showError('Vui lòng nhập mật khẩu.'); passEl.focus(); return;
+        }
+        if (password.length < 6) {
+          showError('Mật khẩu phải có ít nhất 6 ký tự.'); passEl.focus(); return;
+        }
+
+        setLoading(true);
+
+        try {
+          const result = await Auth.login(email, password);
+
+          if (result && result.success) {
+            /* Persist "remember me" */
+            if (rememberMe.checked) {
+              localStorage.setItem('acg_remember_email', email);
+            } else {
+              localStorage.removeItem('acg_remember_email');
+            }
+            /* Success: fade card out, then redirect */
+            loginCard.style.transition = 'opacity 0.42s ease, transform 0.42s ease';
+            loginCard.style.opacity    = '0';
+            loginCard.style.transform  = 'translateY(-10px) scale(1.02)';
+            setTimeout(() => {
+              window.location.href = './pages/dashboard.html';
+            }, 440);
+          } else {
+            setLoading(false);
+            const msg = (result && result.error)
+              ? result.error
+              : 'Sai email hoặc mật khẩu. Vui lòng thử lại.';
+            showError(msg);
+          }
+        } catch (err) {
+          setLoading(false);
+          showError('Không thể kết nối máy chủ. Vui lòng kiểm tra kết nối mạng.');
+          console.error('[ACG Login]', err);
+        }
+      }
+
+      /* ── Bind submit ────────────────────────── */
+      form.addEventListener('submit', handleLogin);
+
+      /* ── Global Enter key ───────────────────── */
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && document.activeElement !== loginBtn) {
+          handleLogin(e);
+        }
+      });
+
+      /* ── Pre-fill remembered email ──────────── */
+      const remembered = localStorage.getItem('acg_remember_email');
+      if (remembered) {
+        emailEl.value      = remembered;
+        rememberMe.checked = true;
+      }
+
+    })();
+
+
+    /* ════════════════════════════════════════════════════════
+       PARTICLE SYSTEM – Floating gold stars & dots
+       ════════════════════════════════════════════════════════ */
+    (function () {
+      const canvas = document.getElementById('particle-canvas');
+      const ctx    = canvas.getContext('2d');
+      let W, H, particles;
+
+      /* Colour palette: gold, gold-light, white, gold-dark */
+      const COLORS = [
+        'rgba(212,175,55,',
+        'rgba(245,215,122,',
+        'rgba(255,248,220,',
+        'rgba(180,148,36,',
+      ];
+
+      function rand(a, b) { return a + Math.random() * (b - a); }
+
+      /* ── Particle class ── */
+      class Particle {
+        constructor() { this.reset(true); }
+
+        reset(random) {
+          this.x     = rand(0, W);
+          this.y     = random ? rand(0, H) : H + 12;
+          this.r     = rand(0.35, 2.0);
+          this.vx    = rand(-0.14, 0.14);
+          this.vy    = rand(-0.48, -0.14);
+          this.alpha = 0;
+          this.target = rand(0.09, 0.52);
+          this.life   = 0;
+          this.max    = rand(190, 430);
+          this.color  = COLORS[Math.floor(Math.random() * COLORS.length)];
+          /* Twinkle */
+          this.twink  = Math.random() > 0.48;
+          this.tph    = rand(0, Math.PI * 2);
+          this.tspd   = rand(0.016, 0.058);
+        }
+
+        update() {
+          this.x   += this.vx;
+          this.y   += this.vy;
+          this.life++;
+          this.tph += this.tspd;
+          /* Fade in */
+          if (this.alpha < this.target) this.alpha = Math.min(this.alpha + 0.006, this.target);
+          /* Fade out near end of life */
+          if (this.life > this.max * 0.70) this.alpha = Math.max(0, this.alpha - 0.006);
+          /* Respawn */
+          if (this.life > this.max || this.y < -22) this.reset(false);
+        }
+
+        draw() {
+          let a = this.alpha;
+          if (this.twink) a *= 0.52 + 0.48 * Math.sin(this.tph);
+
+          if (this.r > 1.25) {
+            /* 4-point star for larger particles */
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.fillStyle = this.color + a + ')';
+            drawStar4(4, this.r * 2.5, this.r * 0.8);
+            ctx.restore();
+          } else {
+            /* Simple circle */
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+            ctx.fillStyle = this.color + a + ')';
+            ctx.fill();
+          }
+
+          /* Soft glow halo */
+          if (a > 0.22) {
+            const gr = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r * 5);
+            gr.addColorStop(0, this.color + (a * 0.3) + ')');
+            gr.addColorStop(1, this.color + '0)');
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.r * 5, 0, Math.PI * 2);
+            ctx.fillStyle = gr;
+            ctx.fill();
+          }
+        }
+      }
+
+      /* Draw 4-point star centred at 0,0 */
+      function drawStar4(spikes, outer, inner) {
+        let angle = -Math.PI / 2;
+        const step = Math.PI / spikes;
+        ctx.beginPath();
+        for (let i = 0; i < spikes * 2; i++) {
+          const r = i % 2 === 0 ? outer : inner;
+          ctx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+          angle += step;
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      /* Resize handler */
+      function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+
+      /* (Re-)create particle pool */
+      function buildPool() {
+        const n = Math.min(Math.floor((W * H) / 6800), 130);
+        particles = Array.from({ length: n }, () => new Particle());
+      }
+
+      /* Render loop */
+      function loop() {
+        ctx.clearRect(0, 0, W, H);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(loop);
+      }
+
+      window.addEventListener('resize', () => { resize(); buildPool(); });
+      resize();
+      buildPool();
+      loop();
+    })();
+  </script>
+
+</body>
+</html>
