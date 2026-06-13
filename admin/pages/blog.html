@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản Lý Blog – An Cựu Galleria Admin</title>
+  <link rel="stylesheet" href="../admin.css" />
+  <script src="../js/core.js" defer></script>
+  <style>
+    .blog-cover-thumb {
+      width: 64px; height: 48px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+    .blog-cover-placeholder {
+      width: 64px; height: 48px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-3); font-size: 1.2rem;
+    }
+    .editor-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 2000;
+      background: var(--bg);
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .editor-overlay.open { display: flex; }
+    .editor-topbar {
+      height: var(--header-h);
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px;
+      flex-shrink: 0;
+    }
+    .editor-topbar-left { display: flex; align-items: center; gap: 14px; }
+    .editor-topbar-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .editor-topbar-right { display: flex; align-items: center; gap: 10px; }
+    .editor-body {
+      flex: 1; overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+    }
+    .editor-main {
+      padding: 32px 36px;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+    }
+    .editor-sidebar {
+      padding: 24px;
+      overflow-y: auto;
+      background: var(--bg-surface);
+    }
+    .editor-section-title {
+      font-size: 0.72rem; font-weight: 700;
+      color: var(--text-3); text-transform: uppercase;
+      letter-spacing: 0.1em; margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .editor-section { margin-bottom: 28px; }
+    .title-input {
+      width: 100%;
+      font-family: var(--font-heading);
+      font-size: 2rem; font-weight: 700;
+      color: var(--text);
+      background: transparent;
+      border: none; outline: none;
+      padding: 0; margin-bottom: 12px;
+      resize: none;
+      line-height: 1.3;
+    }
+    .title-input::placeholder { color: var(--text-3); }
+    .slug-row {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 24px;
+    }
+    .slug-prefix { font-size: 0.8rem; color: var(--text-3); white-space: nowrap; }
+    .slug-input {
+      flex: 1;
+      font-size: 0.85rem; color: var(--gold);
+      background: transparent;
+      border: none; border-bottom: 1px solid var(--border);
+      outline: none; padding: 4px 6px;
+      font-family: monospace;
+    }
+    .slug-input:focus { border-bottom-color: var(--gold); }
+    .md-toolbar {
+      display: flex; gap: 4px; flex-wrap: wrap;
+      padding: 8px 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    }
+    .md-btn {
+      padding: 5px 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-2);
+      font-size: 0.75rem; font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .md-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+    .content-textarea {
+      width: 100%;
+      min-height: 360px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: 'Courier New', monospace;
+      line-height: 1.8;
+      padding: 16px;
+      resize: vertical;
+      outline: none;
+    }
+    .content-textarea:focus { border-color: var(--gold); }
+    .char-count { font-size: 0.72rem; color: var(--text-3); text-align: right; margin-top: 4px; }
+    .tags-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .tag-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-gold);
+      border-radius: 99px;
+      font-size: 0.75rem; color: var(--gold);
+    }
+    .tag-chip-remove { cursor: pointer; color: var(--text-3); font-size: 0.7rem; line-height: 1; }
+    .tag-chip-remove:hover { color: var(--danger); }
+    .cover-preview-box {
+      width: 100%; aspect-ratio: 16/9;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 8px; position: relative;
+    }
+    .cover-preview-box img { width: 100%; height: 100%; object-fit: cover; }
+    .cover-preview-empty {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      color: var(--text-3);
+    }
+    .cover-preview-empty span { font-size: 0.75rem; }
+    .read-time-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      font-size: 0.75rem; color: var(--text-2);
+      margin-top: 6px;
+    }
+    .publish-toggle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .publish-toggle-row:last-child { border-bottom: none; }
+    .publish-toggle-label { font-size: 0.875rem; font-weight: 500; color: var(--text-2); }
+    .actions-row {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      padding-top: 16px; border-top: 1px solid var(--border);
+    }
+    .action-btns { display: flex; gap: 6px; align-items: center; }
+    @media (max-width: 900px) {
+      .editor-body { grid-template-columns: 1fr; }
+      .editor-main { border-right: none; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<script>
+  (function() {
+    var token = localStorage.getItem('acg_admin_token');
+    var exp = parseInt(localStorage.getItem('acg_admin_exp') || '0');
+    if (!token || Date.now() >= exp) window.location.href = '/admin/index.html';
+  })();
+</script>
+
+<div class="admin-layout">
+
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">A</div>
+        <div class="sidebar-logo-text">
+          <strong>An Cựu Galleria</strong>
+          <span>Admin Panel</span>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Tổng Quan</div>
+      <a href="/admin/index.html" class="admin-nav-link"><span class="nav-icon">📊</span> Dashboard</a>
+      <div class="nav-section-title">Nội Dung</div>
+      <a href="properties.html" class="admin-nav-link"><span class="nav-icon">🏠</span> Bất Động Sản</a>
+      <a href="projects.html" class="admin-nav-link"><span class="nav-icon">🏗️</span> Dự Án</a>
+      <a href="blog.html" class="admin-nav-link active"><span class="nav-icon">📝</span> Blog</a>
+      <a href="media.html" class="admin-nav-link"><span class="nav-icon">🖼️</span> Media</a>
+      <div class="nav-section-title">Kinh Doanh</div>
+      <a href="leads.html" class="admin-nav-link">
+        <span class="nav-icon">👥</span> Khách Hàng
+        <span class="nav-badge" id="sidebarLeadCount">0</span>
+      </a>
+      <a href="agents.html" class="admin-nav-link"><span class="nav-icon">🤝</span> Đại Lý</a>
+      <div class="nav-section-title">Hệ Thống</div>
+      <a href="settings.html" class="admin-nav-link"><span class="nav-icon">⚙️</span> Cài Đặt</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="sidebarAvatar">A</div>
+        <div class="sidebar-user-info">
+          <strong id="sidebarEmail">Admin</strong>
+          <span>Quản trị viên</span>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-full btn-sm" onclick="Auth.logout()">🚪 Đăng Xuất</button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" onclick="document.getElementById('adminSidebar').classList.toggle('open')">☰</button>
+        <div>
+          <div class="topbar-title">Quản Lý Blog</div>
+          <div class="topbar-breadcrumb">Admin / Blog</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-gold btn-sm" onclick="openBlogEditor()">✏️ Viết Bài Mới</button>
+      </div>
+    </header>
+
+    <div class="admin-content">
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon gold">📝</div>
+          <div><div class="stat-value" id="statTotal">6</div><div class="stat-label">Tổng bài viết</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">✅</div>
+          <div><div class="stat-value" id="statPublished">4</div><div class="stat-label">Đã xuất bản</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue">📄</div>
+          <div><div class="stat-value" id="statDraft">2</div><div class="stat-label">Bản nháp</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">👁</div>
+          <div><div class="stat-value" id="statViews">12.4K</div><div class="stat-label">Lượt xem</div></div>
+        </div>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="filter-bar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="blogSearch" placeholder="Tìm kiếm bài viết..." oninput="filterBlogs()" />
+        </div>
+        <select class="filter-select" id="blogCatFilter" onchange="filterBlogs()">
+          <option value="">Tất cả danh mục</option>
+          <option value="Kiến thức">Kiến thức</option>
+          <option value="Pháp lý">Pháp lý</option>
+          <option value="Phân tích dự án">Phân tích dự án</option>
+          <option value="Thị trường">Thị trường</option>
+        </select>
+        <select class="filter-select" id="blogStatusFilter" onchange="filterBlogs()">
+          <option value="">Tất cả trạng thái</option>
+          <option value="published">Đã xuất bản</option>
+          <option value="draft">Nháp</option>
+        </select>
+        <button class="btn btn-gold btn-sm" onclick="openBlogEditor()">✏️ Viết Bài Mới</button>
+      </div>
+
+      <!-- BLOG TABLE -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 Danh Sách Bài Viết</div>
+          <span class="badge badge-gold" id="blogCountBadge">6 bài</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th style="width:80px;">Ảnh</th>
+                <th>Tiêu đề / Tóm tắt</th>
+                <th>Danh mục</th>
+                <th>Tác giả</th>
+                <th>Ngày</th>
+                <th>Trạng thái</th>
+                <th style="width:160px;">Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="blogTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- BLOG EDITOR FULL PAGE -->
+<div class="editor-overlay" id="blogEditorOverlay">
+  <div class="editor-topbar">
+    <div class="editor-topbar-left">
+      <button class="btn btn-ghost btn-sm" onclick="closeBlogEditor()">← Quay lại</button>
+      <div class="editor-topbar-title" id="editorModeLabel">✏️ Viết Bài Mới</div>
+      <span class="read-time-badge" id="readTimeBadge">⏱ ~0 phút đọc</span>
+    </div>
+    <div class="editor-topbar-right">
+      <button class="btn btn-outline btn-sm" onclick="saveBlogDraft()">💾 Lưu Nháp</button>
+      <button class="btn btn-gold btn-sm" onclick="publishBlog()">🚀 Xuất Bản</button>
+    </div>
+  </div>
+
+  <div class="editor-body">
+    <div class="editor-main">
+      <textarea class="title-input" id="editorTitle" rows="2" placeholder="Tiêu đề bài viết..." oninput="onTitleInput(this)"></textarea>
+      <div class="slug-row">
+        <span class="slug-prefix">ancuugalleriahue.vn/blog/</span>
+        <input type="text" class="slug-input" id="editorSlug" placeholder="duong-dan-bai-viet" />
+        <button class="btn btn-ghost btn-sm" onclick="regenerateSlug()" title="Tạo lại slug">🔄</button>
+      </div>
+
+      <div class="editor-section">
+        <div class="editor-section-title">📄 Nội dung bài viết</div>
+        <div class="md-toolbar">
+          <button class="md-btn" onclick="insertMd('# ','')">H1</button>
+          <button class="md-btn" onclick="insertMd('## ','')">H2</button>
+          <button class="md-btn" onclick="insertMd('### ','')">H3</button>
+          <button class="md-btn" onclick="insertMd('**','**')"><b>B</b></button>
+          <button class="md-btn" onclick="insertMd('*','*')"><i>I</i></button>
+          <button class="md-btn" onclick="insertMd('\n- ','')">• List</button>
+          <button class="md-btn" onclick="insertMd('\n1. ','')">1. List</button>
+          <button class="md-btn" onclick="insertMdLink()">🔗 Link</button>
+          <button class="md-btn" onclick="insertMdImage()">🖼 Image</button>
+          <button class="md-btn" onclick="insertMd('\n> ','')">❝ Quote</button>
+          <button class="md-btn" onclick="insertMd('\n```\n','\n```')">{ } Code</button>
+          <button class="md-btn" onclick="insertMd('\n---\n','')">─ HR</button>
+        </div>
+        <textarea class="content-textarea" id="editorContent" placeholder="Viết nội dung bài viết ở đây (hỗ trợ Markdown)..." oninput="onContentInput()"></textarea>
+        <div class="char-count" id="contentCharCount">0 ký tự</div>
+      </div>
+
+      <div class="editor-section">
+        <div class="editor-section-title">🔍 SEO Meta</div>
+        <div class="form-group">
+          <label class="form-label">Meta Title</label>
+          <input type="text" class="form-control" id="editorMetaTitle" placeholder="SEO title (tối đa 60 ký tự)" maxlength="60" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Meta Description</label>
+          <textarea class="form-control" id="editorMetaDesc" rows="3" placeholder="SEO description (tối đa 160 ký tự)" maxlength="160"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="editor-sidebar">
+      <div class="editor-section">
+        <div class="editor-section-title">🖼 Ảnh Bìa</div>
+        <div class="cover-preview-box" id="coverPreviewBox">
+          <div class="cover-preview-empty" id="coverPreviewEmpty">
+            <span style="font-size:2rem;">🖼</span>
+            <span>Chưa có ảnh bìa</span>
+          </div>
+          <img src="" id="coverPreviewImg" style="display:none;width:100%;height:100%;object-fit:cover;" />
+        </div>
+        <div class="upload-zone" style="padding:14px 10px;">
+          <input type="file" id="coverFileInput" accept="image/*" onchange="handleCoverUpload(this)" />
+          <div class="upload-zone-text"><strong>Chọn ảnh</strong> hoặc kéo thả</div>
+        </div>
+        <button class="btn btn-ghost btn-sm btn-full" onclick="clearCoverImage()" style="margin-top:6px;">✕ Xóa ảnh</button>
+      </div>
+
+      <div class="editor-section">
+        <div class="editor-section-title">📂 Phân Loại</div>
+        <div class="form-group">
+          <label class="form-label">Danh mục</label>
+          <select class="form-control" id="editorCategory">
+            <option value="Kiến thức">Kiến thức</option>
+            <option value="Pháp lý">Pháp lý</option>
+            <option value="Phân tích dự án">Phân tích dự án</option>
+            <option value="Thị trường">Thị trường</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tags</label>
+          <div class="tags-container" id="tagsContainer"></div>
+          <input type="text" class="form-control" id="tagInput" placeholder="Nhập tag, Enter để thêm..." onkeydown="handleTagInput(event)" />
+          <div style="font-size:0.72rem;color:var(--text-3);margin-top:4px;">Enter hoặc dấu phẩy để thêm</div>
+        </div>
+      </div>
+
+      <div class="editor-section">
+        <div class="editor-section-title">👤 Tác Giả</div>
+        <div class="form-group">
+          <label class="form-label">Tên tác giả</label>
+          <input type="text" class="form-control" id="editorAuthor" value="Nguyễn Minh Tuấn" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Thời gian đọc (ước tính)</label>
+          <div class="read-time-badge" style="width:fit-content;">⏱ <span id="readTimeText">~0 phút</span></div>
+        </div>
+      </div>
+
+      <div class="editor-section">
+        <div class="editor-section-title">📋 Tóm Tắt</div>
+        <textarea class="form-control" id="editorExcerpt" rows="4" placeholder="Tóm tắt ngắn bài viết (tối đa 300 ký tự)..." maxlength="300" oninput="updateExcerptCount(this)"></textarea>
+        <div class="char-count" id="excerptCharCount">0 / 300</div>
+      </div>
+
+      <div class="editor-section">
+        <div class="editor-section-title">⚙️ Tùy Chọn Xuất Bản</div>
+        <div class="publish-toggle-row">
+          <span class="publish-toggle-label">🚀 Xuất bản ngay</span>
+          <label class="toggle"><input type="checkbox" id="togglePublish" /><span class="toggle-slider"></span></label>
+        </div>
+        <div class="publish-toggle-row">
+          <span class="publish-toggle-label">⭐ Bài nổi bật</span>
+          <label class="toggle"><input type="checkbox" id="toggleFeatured" /><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <button class="btn btn-outline btn-sm" style="flex:1;" onclick="saveBlogDraft()">💾 Lưu Nháp</button>
+        <button class="btn btn-gold btn-sm" style="flex:1;" onclick="publishBlog()">🚀 Xuất Bản</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirm-modal" style="display:none;" onclick="if(event.target===this)closeModal('confirm-modal')">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">⚠️ Xác nhận</div>
+      <button class="modal-close-btn" onclick="closeModal('confirm-modal')">✕</button>
+    </div>
+    <div class="modal-body"><p id="confirm-msg" style="color:var(--text-2);line-height:1.7;"></p></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('confirm-modal')">Hủy</button>
+      <button class="btn btn-danger btn-sm" id="confirm-ok">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="modal-overlay" id="previewModal" style="display:none;" onclick="if(event.target===this)closeModal('previewModal')">
+  <div class="modal-box modal-lg" style="max-height:85vh;">
+    <div class="modal-header">
+      <div class="modal-title">👁 Xem trước bài viết</div>
+      <button class="modal-close-btn" onclick="closeModal('previewModal')">✕</button>
+    </div>
+    <div class="modal-body" id="previewModalBody" style="font-size:0.9rem;line-height:1.8;"></div>
+  </div>
+</div>
+
+<script>
+const MOCK_BLOGS = [
+  { id:1, title:'An Cựu Galleria Huế – Tổng Quan Dự Án Cao Cấp Nhất Miền Trung', excerpt:'Khám phá chi tiết dự án An Cựu Galleria Huế, từ vị trí chiến lược đến thiết kế đẳng cấp, phù hợp cho cả đầu tư và an cư.', category:'Phân tích dự án', author:'Nguyễn Minh Tuấn', date:'2025-06-01', status:'published', featured:true, views:3200, image:'/images/apartment.png', slug:'an-cuu-galleria-hue-tong-quan', tags:['An Cựu Galleria','Phân tích','Huế'], meta_title:'An Cựu Galleria Huế – Tổng Quan Dự Án', meta_desc:'Tổng quan chi tiết dự án An Cựu Galleria Huế.', content:'## Giới thiệu\n\nAn Cựu Galleria là dự án BDS cao cấp nhất tại Huế với quy mô 280 căn hộ và shophouse...' },
+  { id:2, title:'Hướng Dẫn Pháp Lý Khi Mua Nhà Đất Tại Huế 2025', excerpt:'Những điều bạn cần biết về sổ đỏ, sổ hồng, hợp đồng công chứng và các thủ tục pháp lý khi giao dịch BDS tại Huế.', category:'Pháp lý', author:'Trần Thị Lan', date:'2025-05-20', status:'published', featured:false, views:2800, image:'/images/land.png', slug:'huong-dan-phap-ly-mua-nha-dat-hue-2025', tags:['Pháp lý','Sổ đỏ','Mua nhà'], meta_title:'Hướng Dẫn Pháp Lý Mua Nhà Đất Huế 2025', meta_desc:'Hướng dẫn đầy đủ pháp lý khi mua nhà đất tại Huế năm 2025.', content:'## Sổ đỏ vs Sổ hồng\n\nSổ đỏ là tên gọi thông thường của GCNQSDĐ...' },
+  { id:3, title:'Thị Trường BDS Huế Q2/2025: Phân Tích Xu Hướng', excerpt:'Cập nhật mới nhất về thị trường bất động sản Huế quý 2 năm 2025 – các phân khúc nào đang tăng, khu vực nào đang hot.', category:'Thị trường', author:'Nguyễn Minh Tuấn', date:'2025-05-10', status:'published', featured:true, views:1950, image:'/images/shophouse.png', slug:'thi-truong-bds-hue-q2-2025', tags:['Thị trường','Q2/2025','Phân tích'], meta_title:'Thị Trường BDS Huế Q2/2025', meta_desc:'Phân tích xu hướng thị trường bất động sản Huế quý 2 năm 2025.', content:'## Tổng quan thị trường\n\nQuý 2/2025 chứng kiến sự bứt phá mạnh mẽ...' },
+  { id:4, title:'5 Lý Do Shophouse An Cựu Là Lựa Chọn Tối Ưu Cho Đầu Tư', excerpt:'Shophouse mặt tiền đường lớn tại An Cựu có tiềm năng sinh lợi cao – phân tích chi tiết từ chuyên gia 8 năm kinh nghiệm.', category:'Kiến thức', author:'Nguyễn Minh Tuấn', date:'2025-04-28', status:'published', featured:false, views:2100, image:'/images/shophouse.png', slug:'5-ly-do-shophouse-an-cuu-tot-nhat', tags:['Shophouse','Đầu tư','An Cựu'], meta_title:'5 Lý Do Shophouse An Cựu Là Lựa Chọn Đầu Tư Tốt Nhất', meta_desc:'Phân tích 5 lý do shophouse An Cựu là lựa chọn đầu tư sinh lợi cao.', content:'## 1. Vị trí đắc địa\n\nMặt tiền đường lớn, mật độ dân cư cao...' },
+  { id:5, title:'Đất Nền An Vân Dương – Cơ Hội Vàng 2025', excerpt:'Khu đô thị An Vân Dương đang phát triển mạnh, đất nền sổ đỏ chính chủ với mức giá còn tốt – nên mua ngay chưa?', category:'Phân tích dự án', author:'Phạm Văn Hùng', date:'2025-04-15', status:'draft', featured:false, views:0, image:'/images/land.png', slug:'dat-nen-an-van-duong-co-hoi-vang-2025', tags:['Đất nền','An Vân Dương','2025'], meta_title:'Đất Nền An Vân Dương 2025', meta_desc:'Cơ hội đầu tư đất nền An Vân Dương năm 2025.', content:'## Giới thiệu khu vực\n\nAn Vân Dương là khu đô thị mới phía Đông Huế...' },
+  { id:6, title:'Căn Hộ View Sông Hương – Sống Đẳng Cấp Giữa Lòng Cố Đô', excerpt:'Những căn hộ với tầm nhìn trực diện ra sông Hương mang lại trải nghiệm sống khác biệt, kết hợp giá trị sinh lợi bền vững.', category:'Kiến thức', author:'Trần Thị Lan', date:'2025-04-05', status:'draft', featured:false, views:0, image:'/images/apartment.png', slug:'can-ho-view-song-huong-co-do', tags:['Căn hộ','Sông Hương','An Cựu Galleria'], meta_title:'Căn Hộ View Sông Hương Huế', meta_desc:'Khám phá căn hộ view sông Hương tại An Cựu Galleria.', content:'## Cuộc sống bên sông\n\nSống với tầm nhìn sông Hương là trải nghiệm độc đáo...' }
+];
+
+let blogs = [], editingBlogId = null, coverImageUrl = '', tags = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+  const cmsData = CMS.get();
+  blogs = (cmsData.blogs && cmsData.blogs.length) ? cmsData.blogs : MOCK_BLOGS.map(b => ({...b}));
+  saveBlogsToStorage();
+  const email = Auth.getEmail();
+  document.getElementById('sidebarEmail').textContent = email.split('@')[0];
+  document.getElementById('sidebarAvatar').textContent = email[0].toUpperCase();
+  const leads = CMS.getLeads();
+  const newLeads = leads.filter(l => l.status === 'new').length;
+  if (newLeads > 0) document.getElementById('sidebarLeadCount').textContent = newLeads;
+  else document.getElementById('sidebarLeadCount').style.display = 'none';
+  setActiveNav();
+  renderStats();
+  renderBlogTable(blogs);
+});
+
+function saveBlogsToStorage() {
+  const cms = CMS.get(); cms.blogs = blogs; CMS.set(cms);
+}
+
+function renderStats() {
+  const total = blogs.length;
+  const published = blogs.filter(b => b.status === 'published').length;
+  const draft = blogs.filter(b => b.status === 'draft').length;
+  const totalViews = blogs.reduce((s, b) => s + (b.views || 0), 0);
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statPublished').textContent = published;
+  document.getElementById('statDraft').textContent = draft;
+  document.getElementById('statViews').textContent = totalViews >= 1000 ? (totalViews/1000).toFixed(1)+'K' : totalViews;
+}
+
+function filterBlogs() {
+  const q = document.getElementById('blogSearch').value.toLowerCase();
+  const cat = document.getElementById('blogCatFilter').value;
+  const status = document.getElementById('blogStatusFilter').value;
+  const filtered = blogs.filter(b => {
+    const matchQ = !q || b.title.toLowerCase().includes(q) || (b.excerpt||'').toLowerCase().includes(q);
+    return matchQ && (!cat || b.category === cat) && (!status || b.status === status);
+  });
+  renderBlogTable(filtered);
+}
+
+function renderBlogTable(data) {
+  const tbody = document.getElementById('blogTableBody');
+  document.getElementById('blogCountBadge').textContent = data.length + ' bài';
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">Không tìm thấy bài viết</div><div class="empty-desc">Thử thay đổi bộ lọc hoặc viết bài mới</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(b => `
+    <tr>
+      <td class="td-image">
+        ${b.image
+          ? `<img src="${b.image}" class="blog-cover-thumb" alt="" onerror="this.style.display='none'" />`
+          : `<div class="blog-cover-placeholder">🖼</div>`}
+      </td>
+      <td>
+        <div class="td-title">
+          ${b.featured ? '<span style="color:var(--gold);font-size:0.75rem;">⭐ </span>' : ''}
+          ${escHtml(b.title)}
+        </div>
+        <small style="color:var(--text-3);font-size:0.75rem;">${escHtml((b.excerpt||'').substring(0,90))}${(b.excerpt||'').length>90?'…':''}</small>
+      </td>
+      <td><span class="badge badge-blue">${escHtml(b.category)}</span></td>
+      <td style="white-space:nowrap;font-size:0.85rem;">${escHtml(b.author)}</td>
+      <td style="white-space:nowrap;font-size:0.8rem;color:var(--text-3);">${formatDate(b.date)}</td>
+      <td>${b.status==='published'?'<span class="badge badge-green">✅ Đã xuất bản</span>':'<span class="badge badge-gray">📄 Nháp</span>'}</td>
+      <td><div class="action-btns">
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="editBlog(${b.id})" title="Sửa">✏️</button>
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="previewBlog(${b.id})" title="Xem trước">👁</button>
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="togglePublishStatus(${b.id})" title="${b.status==='published'?'Chuyển về nháp':'Xuất bản'}">${b.status==='published'?'🔴':'🚀'}</button>
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="deleteBlog(${b.id})" title="Xóa" style="color:var(--danger);">🗑️</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function deleteBlog(id) {
+  const b = blogs.find(x => x.id === id);
+  confirmAction('Xóa bài viết "' + b.title + '"? Hành động này không thể hoàn tác.', () => {
+    blogs = blogs.filter(x => x.id !== id);
+    saveBlogsToStorage(); renderStats(); filterBlogs();
+    showToast('Đã xóa bài viết.', 'success');
+  });
+}
+
+function togglePublishStatus(id) {
+  const b = blogs.find(x => x.id === id);
+  if (!b) return;
+  b.status = b.status === 'published' ? 'draft' : 'published';
+  saveBlogsToStorage(); renderStats(); filterBlogs();
+  showToast(b.status === 'published' ? '🚀 Đã xuất bản!' : '📄 Chuyển về nháp.', 'success');
+}
+
+function previewBlog(id) {
+  const b = blogs.find(x => x.id === id);
+  if (!b) return;
+  document.getElementById('previewModalBody').innerHTML = `
+    ${b.image ? `<img src="${b.image}" style="width:100%;border-radius:var(--radius);margin-bottom:20px;max-height:300px;object-fit:cover;" />` : ''}
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+      <span class="badge badge-blue">${escHtml(b.category)}</span>
+      ${b.featured ? '<span class="badge badge-gold">⭐ Nổi bật</span>' : ''}
+      <span style="font-size:0.75rem;color:var(--text-3);">📅 ${formatDate(b.date)} · 👤 ${escHtml(b.author)}</span>
+    </div>
+    <h2 style="font-family:var(--font-heading);font-size:1.5rem;color:var(--text);margin-bottom:12px;">${escHtml(b.title)}</h2>
+    <p style="color:var(--text-2);font-style:italic;margin-bottom:16px;padding:12px;background:var(--bg-card);border-radius:8px;border-left:3px solid var(--gold);">${escHtml(b.excerpt||'')}</p>
+    <pre style="color:var(--text-2);white-space:pre-wrap;font-family:var(--font-body);line-height:1.8;">${escHtml(b.content||'Chưa có nội dung.')}</pre>
+    ${b.tags&&b.tags.length ? '<div style="margin-top:16px;display:flex;gap:6px;flex-wrap:wrap;">'+b.tags.map(t=>'<span class="tag-chip">#'+escHtml(t)+'</span>').join('')+'</div>' : ''}`;
+  openModal('previewModal');
+}
+
+function openBlogEditor(id) {
+  id = id || null;
+  editingBlogId = id;
+  tags = []; coverImageUrl = '';
+  if (id) {
+    const b = blogs.find(x => x.id === id);
+    document.getElementById('editorModeLabel').textContent = '✏️ Chỉnh sửa bài viết';
+    document.getElementById('editorTitle').value = b.title;
+    document.getElementById('editorSlug').value = b.slug;
+    document.getElementById('editorCategory').value = b.category;
+    document.getElementById('editorContent').value = b.content || '';
+    document.getElementById('editorExcerpt').value = b.excerpt || '';
+    document.getElementById('editorAuthor').value = b.author;
+    document.getElementById('editorMetaTitle').value = b.meta_title || '';
+    document.getElementById('editorMetaDesc').value = b.meta_desc || '';
+    document.getElementById('togglePublish').checked = b.status === 'published';
+    document.getElementById('toggleFeatured').checked = !!b.featured;
+    tags = b.tags ? [...b.tags] : [];
+    coverImageUrl = b.image || '';
+    if (coverImageUrl) {
+      document.getElementById('coverPreviewImg').src = coverImageUrl;
+      document.getElementById('coverPreviewImg').style.display = '';
+      document.getElementById('coverPreviewEmpty').style.display = 'none';
+    } else {
+      document.getElementById('coverPreviewImg').style.display = 'none';
+      document.getElementById('coverPreviewEmpty').style.display = '';
+    }
+  } else {
+    document.getElementById('editorModeLabel').textContent = '✏️ Viết Bài Mới';
+    ['editorTitle','editorSlug','editorContent','editorExcerpt','editorMetaTitle','editorMetaDesc'].forEach(id2 => document.getElementById(id2).value = '');
+    document.getElementById('editorCategory').value = 'Kiến thức';
+    document.getElementById('editorAuthor').value = 'Nguyễn Minh Tuấn';
+    document.getElementById('togglePublish').checked = false;
+    document.getElementById('toggleFeatured').checked = false;
+    document.getElementById('coverPreviewImg').style.display = 'none';
+    document.getElementById('coverPreviewEmpty').style.display = '';
+    coverImageUrl = '';
+  }
+  renderTags(); onContentInput(); updateExcerptCount(document.getElementById('editorExcerpt'));
+  document.getElementById('blogEditorOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function editBlog(id) { openBlogEditor(id); }
+
+function closeBlogEditor() {
+  document.getElementById('blogEditorOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function saveBlogDraft() { saveBlog('draft'); }
+function publishBlog() { saveBlog('published'); }
+
+function saveBlog(status) {
+  const title = document.getElementById('editorTitle').value.trim();
+  if (!title) { showToast('Vui lòng nhập tiêu đề bài viết.', 'error'); return; }
+  let slug = document.getElementById('editorSlug').value.trim() || toSlug(title);
+  const data = {
+    title, slug,
+    category: document.getElementById('editorCategory').value,
+    content: document.getElementById('editorContent').value,
+    excerpt: document.getElementById('editorExcerpt').value,
+    author: document.getElementById('editorAuthor').value.trim(),
+    meta_title: document.getElementById('editorMetaTitle').value.trim(),
+    meta_desc: document.getElementById('editorMetaDesc').value.trim(),
+    status: status,
+    featured: document.getElementById('toggleFeatured').checked,
+    tags: [...tags], image: coverImageUrl,
+    date: new Date().toISOString().split('T')[0]
+  };
+  if (editingBlogId) {
+    const idx = blogs.findIndex(b => b.id === editingBlogId);
+    blogs[idx] = { ...blogs[idx], ...data };
+  } else {
+    blogs.unshift({ id: Date.now(), views: 0, ...data });
+  }
+  saveBlogsToStorage(); renderStats(); filterBlogs(); closeBlogEditor();
+  showToast(status === 'published' ? '🚀 Đã xuất bản bài viết!' : '💾 Đã lưu nháp!', 'success');
+}
+
+function onTitleInput(el) {
+  if (!editingBlogId) document.getElementById('editorSlug').value = toSlug(el.value);
+  estimateReadTime();
+}
+function regenerateSlug() {
+  document.getElementById('editorSlug').value = toSlug(document.getElementById('editorTitle').value);
+}
+function toSlug(str) {
+  return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-').replace(/-+/g,'-');
+}
+function handleTagInput(e) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const val = e.target.value.replace(',','').trim();
+    if (val && !tags.includes(val)) { tags.push(val); renderTags(); }
+    e.target.value = '';
+  }
+}
+function renderTags() {
+  document.getElementById('tagsContainer').innerHTML = tags.map((t,i) =>
+    `<span class="tag-chip">#${escHtml(t)}<span class="tag-chip-remove" onclick="removeTag(${i})">✕</span></span>`).join('');
+}
+function removeTag(i) { tags.splice(i,1); renderTags(); }
+function onContentInput() {
+  const val = document.getElementById('editorContent').value;
+  document.getElementById('contentCharCount').textContent = val.length + ' ký tự';
+  estimateReadTime();
+}
+function updateExcerptCount(el) {
+  document.getElementById('excerptCharCount').textContent = el.value.length + ' / 300';
+}
+function estimateReadTime() {
+  const words = document.getElementById('editorContent').value.trim().split(/\s+/).filter(Boolean).length;
+  const m = Math.max(1, Math.round(words/200));
+  document.getElementById('readTimeBadge').innerHTML = '⏱ ~' + m + ' phút đọc';
+  document.getElementById('readTimeText').textContent = '~' + m + ' phút';
+}
+function insertMd(before, after) {
+  const ta = document.getElementById('editorContent');
+  const s = ta.selectionStart, e2 = ta.selectionEnd;
+  const sel = ta.value.substring(s, e2);
+  ta.value = ta.value.substring(0,s) + before + sel + after + ta.value.substring(e2);
+  ta.selectionStart = s + before.length;
+  ta.selectionEnd = s + before.length + sel.length;
+  ta.focus(); onContentInput();
+}
+function insertMdLink() {
+  const url = prompt('Nhập URL:'); if (!url) return;
+  const text = prompt('Nhập văn bản:') || 'Link';
+  insertMd('['+text+']('+url+')', '');
+}
+function insertMdImage() {
+  const url = prompt('Nhập URL ảnh:'); if (!url) return;
+  const alt = prompt('Mô tả ảnh:') || 'Image';
+  insertMd('!['+alt+']('+url+')', '');
+}
+function handleCoverUpload(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    coverImageUrl = e.target.result;
+    document.getElementById('coverPreviewImg').src = coverImageUrl;
+    document.getElementById('coverPreviewImg').style.display = '';
+    document.getElementById('coverPreviewEmpty').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+function clearCoverImage() {
+  coverImageUrl = '';
+  document.getElementById('coverPreviewImg').style.display = 'none';
+  document.getElementById('coverPreviewEmpty').style.display = '';
+  document.getElementById('coverFileInput').value = '';
+}
+function formatDate(d) {
+  if (!d) return '–';
+  try { return new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}); } catch { return d; }
+}
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
